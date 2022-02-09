@@ -1,0 +1,13 @@
+name = "CompositeGraphs"
+uuid = "03c36417-ddab-428a-818d-5359aee292ef"
+authors = ["fchrstou <filippos.christou@ikr.uni-stuttgart.de> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
