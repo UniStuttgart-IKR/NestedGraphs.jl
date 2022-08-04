@@ -17,7 +17,7 @@ using Test
     eds = [((1,1), (2,1)), ((3,2), (2,1)), ((3,3),(2,3))]
     cg = NestedGraph([g1,g2,g3], eds, both_ways=true)
 
-    @test cg.ceds == NestedEdge.(eds) 
+    @test cg.neds == NestedEdge.(eds) 
 
     for (i,gr) in enumerate([g1, g2, g3])
         for v in vertices(g1)

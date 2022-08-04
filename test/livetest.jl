@@ -2,6 +2,8 @@ using Revise
 using Graphs, MetaGraphs, NestedGraphs
 using GLMakie
 
+using Test
+
 g1 = complete_graph(3) |> MetaDiGraph
 g2 = complete_graph(3) |> MetaDiGraph
 g3 = complete_graph(3) |> MetaDiGraph

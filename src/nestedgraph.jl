@@ -61,7 +61,7 @@ function NestedGraph(grv::Vector{R}, edges; both_ways::Bool=false) where {R<:Abs
 end
 
 "Unwrap NestedGraph to Graph type"
-unwraptype(::Type{NestedGraph{T,R}}) where {T<:Integer, R<:AbstractGraph} = return unwraptype(R)
+unwraptype(::Type{NestedGraph{T,R,N}}) where {T,R,N} = return unwraptype(R)
 unwraptype(gt::Type{T}) where {T<:AbstractGraph} = return gt
 
 # implement `AbstractTrees` (possibly more in the future)
