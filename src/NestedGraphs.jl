@@ -5,7 +5,8 @@ import Graphs: AbstractSimpleEdge, AbstractGraphFormat, nv, ne
 import Base: Pair, Tuple
 import AbstractTrees
 
-export NestedEdge, NestedGraph, vertex, edge, compositeedge, domain, domainedge, interdomainedges
+export NestedEdge, NestedVertex, NestedGraph, vertex, edge, nestededge, nestedvertex, domain, domainedge, interdomainedges
+export NestedMetaGraph
        
 include("nestedgraph.jl")
 include("graphsimpl.jl")

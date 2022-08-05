@@ -43,16 +43,17 @@ struct NestedGraph{T <: Integer, R <: AbstractGraph{T}, N <: Union{AbstractGraph
 end
 
 Base.show(io::IO, t::NestedGraph{T,R}) where {T,R} = print(io, "NestedGraph{$(R)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) subnets)")
-NestedGraph{T,R,N}() where {T,R,N} = NestedGraph(R(), Vector{N}([R()]), Vector{NestedEdge{T}}(), Vector{Tuple{T,T}}())
+NestedGraph{T,R}() where {T,R} = NestedGraph{T,R,R}()
+NestedGraph{T,R,N}() where {T,R,N} = NestedGraph(R(), Vector{N}(), Vector{NestedEdge{T}}(), Vector{Tuple{T,T}}())
 NestedGraph(::Type{R}) where {R<:AbstractGraph} = NestedGraph(R(), [R()], Vector{NestedEdge{Int}}(), Vector{Tuple{Int,Int}}())
 NestedGraph(grv::Vector{T}) where {T<:AbstractGraph} = NestedGraph(grv, Vector{NestedEdge{Int}}())
-function NestedGraph(grv::Vector{R}, edges; both_ways::Bool=false) where {R<:AbstractGraph}
+function NestedGraph(grv::Vector{R}, edges::AbstractVector; both_ways::Bool=false) where {R<:AbstractGraph}
     nedgs = convert.(NestedEdge, edges)
     flatgr = unwraptype(R)()
     vmap = Vector{Tuple{Int,Int}}()
     # transfer the graphs to flat graph
     for (i,g) in enumerate(grv)
-        add_verdges!(flatgr, g)
+        shallowcopy_verdges!(flatgr, g)
         [push!(vmap, (i,v)) for v in vertices(g)]
     end
     # register nedgs between the graphs
@@ -67,70 +68,26 @@ unwraptype(gt::Type{T}) where {T<:AbstractGraph} = return gt
 # implement `AbstractTrees` (possibly more in the future)
 AbstractTrees.children(node::NestedGraph) = node.grv
 
-Base.getindex(cg::NestedGraph, indx, props::Symbol) = Base.getindex(cg.flatgr, indx, props)
+Base.getindex(ng::NestedGraph, indx, props::Symbol) = Base.getindex(ng.flatgr, indx, props)
 
 "Convert a local view `NestedVertex` to a global view"
-vertex(cg::NestedGraph, cv::NestedVertex) = vertex(cg, cv...)
-vertex(cg::NestedGraph, d::T, v::T) where T<:Integer = findfirst(==((d,v)), cg.vmap)
+vertex(ng::NestedGraph, cv::NestedVertex) = vertex(ng, cv...)
+vertex(ng::NestedGraph, d::T, v::T) where T<:Integer = findfirst(==((d,v)), ng.vmap)
 "Get the domain index of a vertex `v`"
-domain(cg::NestedGraph, v::T) where T<:Integer = cg.vmap[v][1]
+domain(ng::NestedGraph, v::T) where T<:Integer = ng.vmap[v][1]
 "Convert a local view `NestedEdge` to a global view"
-edge(cg::NestedGraph, ce::NestedEdge) = Edge(vertex(cg, ce.src[1], ce.src[2]), vertex(cg, ce.dst[1], ce.dst[2]))
+edge(ng::NestedGraph, ce::NestedEdge) = Edge(vertex(ng, ce.src[1], ce.src[2]), vertex(ng, ce.dst[1], ce.dst[2]))
 "Convert a global view of an edge to local view `NestedEdge`"
-nestededge(cg::NestedGraph, e::Edge) = NestedEdge(cg.vmap[e.src], cg.vmap[e.dst])
+nestededge(ng::NestedGraph, e::Edge) = NestedEdge(ng.vmap[e.src], ng.vmap[e.dst])
+nestedvertex(ng::NestedGraph, v) = ng.vmap[v]
 """
 Get the domain of an edge
 If the edge connects 2 domains, it returns `nothing`
 """
-domainedge(cg::NestedGraph, e::Edge) = issamedomain(cg, e.src, e.dst) ? Edge(cg.vmap[e.src][2], cg.vmap[e.dst][2]) : nothing
+domainedge(ng::NestedGraph, e::Edge) = issamedomain(ng, e.src, e.dst) ? Edge(ng.vmap[e.src][2], ng.vmap[e.dst][2]) : nothing
 "Checks if two nodes are in the same domain"
-issamedomain(cg::NestedGraph, v1::Int, v2::Int) = domain(cg, v1) == domain(cg,v2)
-issamedomain(cg::NestedGraph, e::Edge) = issamedomain(cg, e.src, e.dst) 
+issamedomain(ng::NestedGraph, v1::Int, v2::Int) = domain(ng, v1) == domain(ng,v2)
+issamedomain(ng::NestedGraph, e::Edge) = issamedomain(ng, e.src, e.dst) 
 issamedomain(ce::NestedEdge) = ce.src[1] == ce.dst[1]
 "Get all edges that have no domain, i.e. that interconnect domains"
-interdomainedges(cg::NestedGraph) = [e for e in edges(cg) if cg.vmap[e.src][1] != cg.vmap[e.dst][1]]
-
-"Adds edges plus the properties if any"
-add_edge_plus!(g1::AbstractGraph, e::Edge) = add_edge!(g1,e)
-add_edge_plus!(g1::AbstractGraph, n1::Int, n2::Int) = add_edge!(g1,n1,n2)
-
-# `add_edges!` is not defined in `Graphs.jl`. Make a PR to add it?
-add_edges!(cg::NestedGraph, cedges::Vector{NestedEdge{R}}, dprops::Union{Vector{Dict{Symbol,U}}, Nothing}=nothing; both_ways::Bool=false) where {R<:Int, U} = add_edges!(cg.flatgr, cg.vmap, cedges, dprops; both_ways=both_ways)
-function add_edges!(flatgr::AbstractGraph, vmap::Vector{Tuple{Int,Int}}, cedges::Vector{NestedEdge{R}}, dprops::Union{Vector{Dict{Symbol,U}}, Nothing}=nothing; both_ways::Bool=false) where {R<:Int, U}
-    dprops !== nothing && length(dprops) != length(cedges) && error("`cedges` and `dprops` must have equal length")
-    for (i,e) in enumerate(cedges)
-        src = findfirst(==(e.src), vmap)
-        dst = findfirst(==(e.dst), vmap)
-        if dprops !== nothing
-            add_edge!(flatgr, src, dst, dprops[i])
-        else
-            add_edge!(flatgr, src, dst)
-        end
-        if both_ways
-            if dprops !== nothing
-                add_edge!(flatgr, dst, src, dprops[i])
-            else 
-                add_edge!(flatgr, dst, src)
-            end
-        end
-    end
-end
-add_edges!(g1::AbstractGraph, g2::AbstractGraph, offset::Int) = [add_edge!(g1, offset+e.src, offset+e.dst) for e in edges(g2)];
-function add_edges!(g1::AbstractGraph, g2::NestedGraph, offset::Int) 
-    recoffset = 0
-    for gr in g2.grv
-        add_edges!(g1, gr, offset+recoffset)
-        recoffset += length(vertices(gr))
-    end
-    # add interdomain edges
-    for e in interdomainedges(g2)
-        add_edge_plus!(g1, e.src+offset, e.dst+offset)
-    end
-end
-
-"Adds vertices and edges from `g2` to `g1`"
-function add_verdges!(g1::AbstractGraph, g2::AbstractGraph)
-    offset = length(vertices(g1))
-    addshallowcopy_vertices!(g1, g2)
-    addshallowcopy_edges!(g1, g2, offset)
-end
+interdomainedges(ng::NestedGraph) = [e for e in edges(ng) if ng.vmap[e.src][1] != ng.vmap[e.dst][1]]

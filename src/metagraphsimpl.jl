@@ -2,77 +2,102 @@
 # the following interfaces must be implemented
 # TODO
 
-# shallow MetaGraphs props will propage properties on the `grv`s automatically
-MetaGraphs.set_prop!(cg::NestedGraph, s::Symbol, val) = MetaGraphs.set_prop!(cg.flatgr, s, val)
-MetaGraphs.set_prop!(cg::NestedGraph, n::Int, s::Symbol, val) = MetaGraphs.set_prop!(cg.flatgr, n, s, val)
-MetaGraphs.set_prop!(cg::NestedGraph, n1::Int, n2::Int, s::Symbol, val) = MetaGraphs.set_prop!(cg.flatgr, n1, n2, s, val)
-MetaGraphs.set_prop!(cg::NestedGraph, e::Edge, s::Symbol, val) = MetaGraphs.set_prop!(cg.flatgr, e, s, val)
-MetaGraphs.get_prop(cg::NestedGraph, s::Symbol) = MetaGraphs.get_prop(cg.flatgr, s)
-MetaGraphs.get_prop(cg::NestedGraph, n::Int, s::Symbol) = MetaGraphs.get_prop(cg.flatgr, n, s)
-MetaGraphs.get_prop(cg::NestedGraph, n1::Int, n2::Int, s::Symbol) = MetaGraphs.get_prop(cg.flatgr, n1, n2, s)
-MetaGraphs.get_prop(cg::NestedGraph, e::Edge, s::Symbol) = MetaGraphs.get_prop(cg.flatgr, e, s)
-MetaGraphs.props(cg::NestedGraph{R}) where {R<:AbstractMetaGraph} = MetaGraphs.props(cg.flatgr)
-MetaGraphs.props(cg::NestedGraph{R}, n::Int) where {R<:AbstractMetaGraph} = MetaGraphs.props(cg.flatgr, n)
-MetaGraphs.props(cg::NestedGraph{R}, n1::Int, n2::Int) where {R<:AbstractMetaGraph} = MetaGraphs.props(cg.flatgr, n1, n2)
-MetaGraphs.props(cg::NestedGraph{R}, e::Edge) where {R<:AbstractMetaGraph} = MetaGraphs.props(cg.flatgr, e)
-MetaGraphs.has_prop(cg::NestedGraph, s::Symbol) = MetaGraphs.has_prop(cg.flatgr, s)
-MetaGraphs.has_prop(cg::NestedGraph, n::Int, s::Symbol) = MetaGraphs.has_prop(cg.flatgr, n, s)
-MetaGraphs.has_prop(cg::NestedGraph, n1::Int, n2::Int, s::Symbol) = MetaGraphs.has_prop(cg.flatgr, n1, n2, s)
-MetaGraphs.set_indexing_prop!(cg::NestedGraph, props::Symbol) = MetaGraphs.set_indexing_prop!(cg.flatgr, props)
+const NestedMetaGraph = NestedGraph{<:Integer,<:AbstractMetaGraph,<:AbstractGraph} 
 
-# initialization
-"Composing MetaGraphs, the copy for the metadata is shallow"
-NestedGraph{T,R}() where {T<:AbstractMetaGraph, R<:AbstractGraph} = NestedGraph{T,R}(T(), Vector{Union{T,R}}([T()]), Vector{NestedEdge{Int}}(), Vector{Tuple{Int,Int}}())
-NestedGraph{T,R}(::Nothing) where {T<:AbstractMetaGraph, R<:AbstractGraph} = NestedGraph{T,R}(T(), Vector{Union{T,R}}(), Vector{NestedEdge{Int}}(), Vector{Tuple{Int,Int}}())
+# forward all operations to `flatgr`
+# shallow MetaGraphs props of `flatgr` will propage to the `grv`s
+MetaGraphs.set_prop!(ng::NestedMetaGraph, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, s, val)
+MetaGraphs.set_prop!(ng::NestedMetaGraph, n::Integer, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, n, s, val)
+MetaGraphs.set_prop!(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, n1, n2, s, val)
+MetaGraphs.set_prop!(ng::NestedMetaGraph, e::Edge, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, e, s, val)
+MetaGraphs.get_prop(ng::NestedMetaGraph, s::Symbol) = MetaGraphs.get_prop(ng.flatgr, s)
+MetaGraphs.get_prop(ng::NestedMetaGraph, n::Integer, s::Symbol) = MetaGraphs.get_prop(ng.flatgr, n, s)
+MetaGraphs.get_prop(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol) = MetaGraphs.get_prop(ng.flatgr, n1, n2, s)
+MetaGraphs.get_prop(ng::NestedMetaGraph, e::Edge, s::Symbol) = MetaGraphs.get_prop(ng.flatgr, e, s)
+MetaGraphs.props(ng::NestedMetaGraph) = MetaGraphs.props(ng.flatgr)
+MetaGraphs.props(ng::NestedMetaGraph, n::Integer) = MetaGraphs.props(ng.flatgr, n)
+MetaGraphs.props(ng::NestedMetaGraph, n1::Integer, n2::Integer) = MetaGraphs.props(ng.flatgr, n1, n2)
+MetaGraphs.props(ng::NestedMetaGraph, e::Edge) = MetaGraphs.props(ng.flatgr, e)
+MetaGraphs.has_prop(ng::NestedMetaGraph, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, s)
+MetaGraphs.has_prop(ng::NestedMetaGraph, n::Integer, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, n, s)
+MetaGraphs.has_prop(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, n1, n2, s)
+MetaGraphs.set_indexing_prop!(ng::NestedMetaGraph, props::Symbol) = MetaGraphs.set_indexing_prop!(ng.flatgr, props)
 
-# implement interface of NestedGraphs
-add_edge_plus!(g1::R, e::Edge) where {R<:AbstractMetaGraph} = add_edge!(g1,e, props(g1,e))
-add_edge_plus!(g1::R, n1::Int, n2::Int) where {R<:AbstractMetaGraph} = add_edge!(g1,n1,n2, props(g1,n1,n2))
 
-"""
-MetaGraphs copy reference if props is empty.
-If props is not empty it calls merge on the props already existing.
-If a call props() and props do not exist a dummy Dict will be returned.
-So in order to have a shallow copy I first initiate an empty Dict and then call 
-in order to save the reference on a valid Dict
-TODO: raise issue in MetaGraphs
-"""
-function addshallowcopy_vertex!(g1::R, g2::R, n::T) where {R<:AbstractMetaGraph, T<:Integer}
+function Graphs.add_vertex!(ng::NestedMetaGraph; domains=1, targetnode=nothing)
+    domain = first(domains)
+    isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
+    Graphs.has_vertex(ng, domain, targetnode) && return false
+    # Graphs.add_vertex!(ng.grv[domain])
+    _propagate_to_nested(ng, Graphs.add_vertex!, domains)
+    shallowcopy_vertex!(ng.flatgr, ng.grv[domain], nv(ng.grv[domain]))
+    push!(ng.vmap, (domain, targetnode) )
+end
+function Graphs.add_vertex!(ng::NestedMetaGraph, dpr::Dict{Symbol}; domains=1, targetnode=nothing)
+    domain = first(domains)
+    isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
+    Graphs.has_vertex(ng, domain, targetnode) && return false
+    # Graphs.add_vertex!(ng.grv[domain], dpr)
+    _propagate_to_nested(ng, Graphs.add_vertex!, domains, dpr)
+    add_vertex!(ng.flatgr, dpr)
+    push!(ng.vmap, (domain, targetnode) )
+end
+function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T) where T<:Integer
+    srctup = ng.vmap[src]
+    dsttup = ng.vmap[dst]
+    if srctup[1] != dsttup[1]
+        push!(ng.neds, NestedEdge(srctup, dsttup))
+        add_edge!(ng.flatgr, src, dst)
+    else
+        add_edge!(ng.grv[srctup[1]], srctup[2], dsttup[2])
+        shallowcopy_edge!(ng.flatgr, src, dst, ng.grv[srctup[1]], srctup[2], dsttup[2])
+    end
+end
+function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T, dpr::Dict{Symbol}) where T<:Integer
+    srctup = ng.vmap[src]
+    dsttup = ng.vmap[dst]
+    if srctup[1] != dsttup[1]
+        push!(ng.neds, NestedEdge(srctup, dsttup))
+    else
+        add_edge!(ng.grv[srctup[1]], srctup[2], dsttup[2], dpr)
+    end
+    add_edge!(ng.flatgr, src, dst, dpr)
+end
+
+#
+# `MetaGraphs.jl` copies reference if `g1` doesn't have a Dict and 
+# calls `merge!` if `g1` has a Dict. Since we want a shallow copy `g1` should not have a Dict. 
+# This is always the case, since we create a new node.
+# If `g2` doesn't have any properties (i.e. no Dict), then a dummy Dict will be returned from `props`.
+# In order to avoid this and return a legit reference from a `Dict` I initialize one in that case.
+# TODO: raise issue in MetaGraphs ?
+#
+"Copies vertices and shallow references to data from `g2` to `g1`"
+function shallowcopy_vertices!(g1::R, g2::R) where {R<:AbstractMetaGraph}
+    for n in vertices(g2)
+        shallowcopy_vertex!(g1,g2,n)
+    end
+end
+shallowcopy_vertex!(g1, g2::R, n) where {R<:NestedMetaGraph} = shallowcopy_vertex!(g1,g2.flatgr,n)
+function shallowcopy_vertex!(g1::R, g2::R, n) where {R<:AbstractMetaGraph}
     if ! MetaGraphs._hasdict(g2, n)
-        g2.vprops[n] = Dict{Symbol,Any}()
+        set_props!(g2, n, Dict{Symbol,Any}())
     end
     Graphs.add_vertex!(g1, props(g2,n))
 end
-function addshallowcopy_edge!(g1::R, src1::Int, dst1::Int, g2::R, src2::Int, dst2::Int) where {R<:AbstractMetaGraph}
+"Copies edges and shallow references to data from `g2` to `g1`"
+function shallowcopy_edges!(g1::R, g2::R, offset::T) where {R<:AbstractMetaGraph, T<:Integer}
+    for e in edges(g2)
+        shallowcopy_edge!(g1, offset+e.src, offset+e.dst, g2, e.src, e.dst)
+    end
+end
+shallowcopy_edge!(g1, src1, dst1, g2::R, src2, dst2) where {R<:NestedMetaGraph} = shallowcopy_edge!(g1,src1,dst1,g2.flatgr,src2,dst2)
+function shallowcopy_edge!(g1::R, src1::T, dst1::T, g2::R, src2::T, dst2::T) where {R<:AbstractMetaGraph,T<:Integer}
     if ! MetaGraphs._hasdict(g2, Edge(src2,dst2))
         set_props!(g2, Edge(src2, dst2), Dict{Symbol,Any}())
     end
     Graphs.add_edge!(g1, src1, dst1, props(g2,src2,dst2))
 end
 
-addshallowcopy_flat_vertex!(cg::NestedGraph, g2::R, n::T) where {R<:AbstractMetaGraph, T<:Integer} = addshallowcopy_vertex!(cg.flatgr, g2, n)
-addshallowcopy_flat_edge!(cg::NestedGraph, src1::Int, dst1::Int, g2::R, src2::Int, dst2::Int) where {R<:AbstractMetaGraph}= addshallowcopy_edge!(cg.flatgr, src1, dst1, g2, src2, dst2)
-
-
-add_edges!(g1::AbstractMetaGraph, g2::AbstractMetaGraph, offset::Int) = [add_edge!(g1, offset+e.src, offset+e.dst, props(g2, e)) for e in edges(g2)];
-
-Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [addshallowcopy_vertex!(g1, g2, v) for v in vertices(g2)];
-function Graphs.add_vertex!(cg::NestedGraph{T}; domain::Int=1, targetnode::Union{Int,Nothing}=nothing) where {T<:AbstractMetaGraph}
-    isnothing(targetnode) && (targetnode = nv(cg.grv[domain])+1)
-    Graphs.has_vertex(cg, domain, targetnode) && return false
-    Graphs.add_vertex!(cg.grv[domain])
-    addshallowcopy_flat_vertex!(cg, cg.grv[domain], nv(cg.grv[domain]))
-    push!(cg.vmap, (domain, targetnode) )
-end
-Graphs.add_edge!(cg::NestedGraph{T}, ce::NestedEdge) where {T<:AbstractMetaGraph} = Graphs.add_edge!(cg, vertex(cg, ce.src[1], ce.src[2]), vertex(cg, ce.dst[1], ce.dst[2]))
-function Graphs.add_edge!(cg::NestedGraph{T}, src::Int, dst::Int) where {T<:AbstractMetaGraph}
-    srctup = cg.vmap[src]
-    dsttup = cg.vmap[dst]
-    if srctup[1] != dsttup[1]
-        push!(cg.neds, NestedEdge(srctup, dsttup))
-        add_flat_edge!(cg, src, dst)
-    else
-        add_edge!(cg.grv[srctup[1]], srctup[2], dsttup[2])
-        addshallowcopy_flat_edge!(cg, src, dst, cg.grv[srctup[1]], srctup[2], dsttup[2])
-    end
-end
+# not implemented in MetaGraphs.jl
+Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [shallowcopy_vertex!(g1, g2, v) for v in vertices(g2)];

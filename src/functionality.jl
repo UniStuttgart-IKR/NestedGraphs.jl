@@ -1,30 +1,40 @@
-add_flat_vertex!(cg) = Graphs.add_vertex!(cg.flatgr)
-add_flat_vertex!(cg::NestedGraph, dpr::Dict{Symbol}) = Graphs.add_vertex!(cg.flatgr, dpr)
-add_flat_vertices!(cg, vs::Int) = Graphs.add_vertices!(cg.flatgr, vs)
-add_flat_edge!(cg::NestedGraph, src::Int, dst::Int) = Graphs.add_edge!(cg.flatgr, src, dst)
-add_flat_edge!(cg::NestedGraph, src::Int, dst::Int, dpr::Dict{Symbol}) = Graphs.add_edge!(cg.flatgr, src, dst, dpr)
+"Adds vertices and edges from `g2` to `g1`"
+function shallowcopy_verdges!(g1::AbstractGraph, g2::AbstractGraph)
+    offset = length(vertices(g1))
+    shallowcopy_vertices!(g1, g2)
+    shallowcopy_edges!(g1, g2, offset)
+end
 
-addshallowcopy_flat_edge!(cg::NestedGraph, src1::Int, dst1::Int, g2::NestedGraph, src2::Int, dst2::Int) = addshallowcopy_edge!(cg.flatgr, src1, dst1, g2.flatgr, src2, dst2)
-addshallowcopy_flat_vertex!(cg::NestedGraph, g2::NestedGraph, n::T) where {T<:Integer} = addshallowcopy_vertex!(cg.flatgr, g2.flatgr, n)
-
-addshallowcopy_vertices!(g1::AbstractGraph, g2::NestedGraph) = addshallowcopy_vertices!(g1, g2.flatgr)
-function addshallowcopy_vertices!(g1::AbstractGraph, g2::AbstractGraph)
+"""
+Adds the vertices from `g2` to `g1`.
+In case the vertices carry data, a shallow copy needs to be added.
+This way any update on the data propagates automatically across the whole `NestedGraph`.
+"""
+shallowcopy_vertices!(g1::AbstractGraph, g2::NestedGraph) = shallowcopy_vertices!(g1, g2.flatgr)
+function shallowcopy_vertices!(g1::AbstractGraph, g2::AbstractGraph)
     for v in vertices(g2)
-        addshallowcopy_vertex!(g1, g2, v)
+        add_vertex!(g1)
     end
 end
 
-addshallowcopy_edges!(g1::AbstractGraph, g2::NestedGraph, offset::Integer) = addshallowcopy_edges!(g1, g2.flatgr, offset)
-function addshallowcopy_edges!(g1::AbstractGraph, g2::AbstractGraph, offset::Integer)
+"""
+Adds the edges from `g2` to `g1`.
+In case the edges carry data, a shallow copy needs to be added.
+This way any update on the data propagates automatically across the whole `NestedGraph`.
+`offset` specifies a mapping between the node numbering in `g2` and `g1`.
+Actually the nodes of `g2` are mapped to the nodes in `g1 + offset`.
+"""
+shallowcopy_edges!(g1::AbstractGraph, g2::NestedGraph, offset::Integer) = shallowcopy_edges!(g1, g2.flatgr, offset)
+function shallowcopy_edges!(g1::AbstractGraph, g2::AbstractGraph, offset::Integer)
     for e in edges(g2)
-        addshallowcopy_edge!(g1, offset+e.src, offset+e.dst, g2, e.src, e.dst)
+        add_edge!(g1, offset+e.src, offset+e.dst)
     end
 end
 
 removeemptygraphs_recursive!(gr::AbstractGraph) = true
-function removeemptygraphs_recursive!(cg::NestedGraph)
+function removeemptygraphs_recursive!(ng::NestedGraph)
     grvs2delete = Vector{Int}()
-    for (ig,gr) in enumerate(cg.grv)
+    for (ig,gr) in enumerate(ng.grv)
         if nv(gr) == ne(gr) == 0
             push!(grvs2delete, ig)
         else
@@ -32,9 +42,9 @@ function removeemptygraphs_recursive!(cg::NestedGraph)
         end
     end
     for ig in grvs2delete
-        deleteat!(cg.grv, ig)
+        deleteat!(ng.grv, ig)
         # modify neds
-        for (ie,ce) in enumerate(cg.neds)
+        for (ie,ce) in enumerate(ng.neds)
             newsource = ce.src
             newdest = ce.dst
             if ce.src[1][1] > ig
@@ -43,12 +53,12 @@ function removeemptygraphs_recursive!(cg::NestedGraph)
             if ce.dst[1][1] > ig
                 newdest = (ce.dst[1]-1, ce.dst[2])
             end
-            cg.neds[ie] = NestedEdge(newsource, newdest)
+            ng.neds[ie] = NestedEdge(newsource, newdest)
         end
         # modify vmap
-        for (iv,vm) in enumerate(cg.vmap)
+        for (iv,vm) in enumerate(ng.vmap)
             if vm[1] > ig
-                cg.vmap[iv] = (vm[1] - 1, vm[2])
+                ng.vmap[iv] = (vm[1] - 1, vm[2])
             end
         end
     end
