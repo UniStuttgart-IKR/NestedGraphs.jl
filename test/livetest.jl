@@ -1,44 +1,32 @@
-using Revise
-using Graphs, MetaGraphs, NestedGraphs
+DynNG = NestedGraph{Int, SimpleGraph{Int}, AbstractGraph}
+ngdyn = DynNG()
+add_vertex!(ngdyn, SimpleGraph(3))
+@assert nv(ngdyn.grv[1]) == 3
 
-using Test
+add_vertex!(ngdyn, SimpleGraph(6))
+@assert nv(ngdyn.grv[1]) == 3 && nv(ngdyn.grv[2]) == 6
 
-g1 = complete_graph(3) |> MetaDiGraph
-g2 = complete_graph(3) |> MetaDiGraph
-g3 = complete_graph(3) |> MetaDiGraph
+add_vertex!(ngdyn)
+@assert nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 6
 
-[set_prop!(g1, e, :el, i*0.1) for (i,e) in enumerate(edges(g1))]
-[set_prop!(g2, e, :el, i*0.01) for (i,e) in enumerate(edges(g2))]
-[set_prop!(g3, e, :el, i*0.001) for (i,e) in enumerate(edges(g3))]
+add_vertex!(ngdyn, domains = 2)
+@assert nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7
 
-[set_prop!(g1, v, :sz, v*10) for v in vertices(g1)]
-[set_prop!(g2, v, :sz, v*100) for v in vertices(g2)]
-[set_prop!(g3, v, :sz, v*1000) for v in vertices(g3)]
+ngin = add_vertex!(ngdyn, DynNG())
+add_vertex!(ngdyn, domains = ngin)
+@assert nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
 
-ng = NestedGraph([g1,g2,g3], [((1,1), (2,1)), ((3,2), (2,1)), ((3,3),(2,3))], both_ways=true)
-# f,_,_ = draw_network(ng.flatgr, nlabels = repr.(vertices(ng.flatgr)))
-# f
+add_vertex!(ngdyn, SimpleGraph(2), domains = ngin)
+@assert nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-cg1 = NestedGraph([g1,g2], [((1,1), (2,1))])
-cg2 = NestedGraph([g1,g3], [((1,2), (2,2)), ((1,3), (2,3))])
-cgm = NestedGraph([cg1, cg2], [((1,1),(2,1)), ((1,5),(2,2))], both_ways=true)
+add_vertex!(ngdyn, DynNG(), domains = ngin)
+@assert nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-add_vertex!(cgm; domain=1)
-nv(cg1.grv[1])
+add_vertex!(ngdyn, domains=[3,2])
+@assert nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 4
 
-# add new elements
+add_vertex!(ngdyn, SimpleGraph(2), domains=[3,3])
+@assert nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 6
 
-# Further tests
-# simple initialization
-
- sg1 = complete_graph(3)
- sg2 = complete_graph(3)
- sg3 = complete_graph(3)
- csg = NestedGraph([sg1,sg2,sg3], [((1,1), (2,1)), ((3,2), (2,1)), ((3,3),(2,3))], both_ways=true)
- csg1 = NestedGraph([sg1,sg2], [((1,1), (2,1))])
- csg2 = NestedGraph([sg1,sg3], [((1,2), (2,2)), ((1,3), (2,3))])
- csgm = NestedGraph([csg1, csg2], [((1,1),(2,1)), ((1,5),(2,2))], both_ways=true)
- 
- @assert nv(sg1) == nv(csg.grv[1]) == nv(csg1.grv[1]) == nv(csgm.grv[1].grv[1])
- 
- @assert ne(sg1) == ne(csg.grv[1]) == ne(csg1.grv[1]) == ne(csgm.grv[1].grv[1])
+@assert nv(ngdyn.grv[3].grv[1]) == 1 && nv(ngdyn.grv[3].grv[2]) == 3 && nv(ngdyn.grv[3].grv[3]) == 2
+@assert nv(ngdyn) == nv(ngdyn.grv[1]) + nv(ngdyn.grv[2]) + nv(ngdyn.grv[3])

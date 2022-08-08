@@ -15,12 +15,15 @@ using Test
     [set_prop!(g1, v, :sz, v*20) for v in vertices(g1)]
     [set_prop!(g2, v, :sz, v*200) for v in vertices(g2)]
     [set_prop!(g3, v, :sz, v*2000) for v in vertices(g3)]
-    [set_prop!(g4, e, :el, i*20000) for (i,e) in enumerate(edges(g4))]
+    [set_prop!(g4, v, :sz, v*20000) for v in vertices(g4)]
 
     eds = [((1,1), (2,1)), ((3,2), (2,1)), ((3,3),(2,3)), ((1,1),(4,1))]
     ng = NestedGraph([g1,g2,g3,g4], eds, both_ways=true)
 
-    @test ng.neds == NestedEdge.(eds) 
+    @test length(ng.neds) == 2*length(NestedEdge.(eds))
+    for ned in eds
+        @test NestedEdge(ned) in ng.neds && reverse(NestedEdge(ned)) in ng.neds
+    end
 
     for (i,gr) in enumerate([g1, g2, g3, g4])
         for v in vertices(g1)

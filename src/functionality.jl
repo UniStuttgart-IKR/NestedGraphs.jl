@@ -1,4 +1,4 @@
-"Adds vertices and edges from `g2` to `g1`"
+"Add vertices and edges from `g2` to `g1`"
 function shallowcopy_verdges!(g1::AbstractGraph, g2::AbstractGraph)
     offset = length(vertices(g1))
     shallowcopy_vertices!(g1, g2)
@@ -6,7 +6,7 @@ function shallowcopy_verdges!(g1::AbstractGraph, g2::AbstractGraph)
 end
 
 """
-Adds the vertices from `g2` to `g1`.
+Add the vertices from `g2` to `g1`.
 In case the vertices carry data, a shallow copy needs to be added.
 This way any update on the data propagates automatically across the whole `NestedGraph`.
 """
@@ -18,7 +18,7 @@ function shallowcopy_vertices!(g1::AbstractGraph, g2::AbstractGraph)
 end
 
 """
-Adds the edges from `g2` to `g1`.
+Add the edges from `g2` to `g1`.
 In case the edges carry data, a shallow copy needs to be added.
 This way any update on the data propagates automatically across the whole `NestedGraph`.
 `offset` specifies a mapping between the node numbering in `g2` and `g1`.

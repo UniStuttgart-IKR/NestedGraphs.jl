@@ -33,6 +33,7 @@ function Graphs.add_vertex!(ng::NestedMetaGraph; domains=1, targetnode=nothing)
     shallowcopy_vertex!(ng.flatgr, ng.grv[domain], nv(ng.grv[domain]))
     push!(ng.vmap, (domain, targetnode) )
 end
+Graphs.add_vertex!(ng::NestedMetaGraph, s::Symbol, v; domains=1, targetnode=nothing) = add_vertex!(ng, Dict(s=>v); domains, targetnode)
 function Graphs.add_vertex!(ng::NestedMetaGraph, dpr::Dict{Symbol}; domains=1, targetnode=nothing)
     domain = first(domains)
     isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
@@ -72,7 +73,7 @@ end
 # In order to avoid this and return a legit reference from a `Dict` I initialize one in that case.
 # TODO: raise issue in MetaGraphs ?
 #
-"Copies vertices and shallow references to data from `g2` to `g1`"
+"Copy vertices and shallow references to data from `g2` to `g1`"
 function shallowcopy_vertices!(g1::R, g2::R) where {R<:AbstractMetaGraph}
     for n in vertices(g2)
         shallowcopy_vertex!(g1,g2,n)
@@ -85,7 +86,7 @@ function shallowcopy_vertex!(g1::R, g2::R, n) where {R<:AbstractMetaGraph}
     end
     Graphs.add_vertex!(g1, props(g2,n))
 end
-"Copies edges and shallow references to data from `g2` to `g1`"
+"Copy edges and shallow references to data from `g2` to `g1`"
 function shallowcopy_edges!(g1::R, g2::R, offset::T) where {R<:AbstractMetaGraph, T<:Integer}
     for e in edges(g2)
         shallowcopy_edge!(g1, offset+e.src, offset+e.dst, g2, e.src, e.dst)
@@ -101,3 +102,42 @@ end
 
 # not implemented in MetaGraphs.jl
 Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [shallowcopy_vertex!(g1, g2, v) for v in vertices(g2)];
+    
+
+#
+# Methods to enrich graph with more graphs
+#
+# """
+# Add domain graph `gr` into the `NestedGraph` `ng`.
+# It connectes `gr` with `ng`
+
+# # Arguments
+# - `dprops`: vector of dictionaries for all `nedges`
+# - `vmap`: customize vmap 
+# - `both_ways`: add `nedges` also for the opposite direction
+# - `rev_cedges`: 
+# """
+# function Graphs.add_vertex!(ng::NestedGraph, gr::T, nedges, dprops=nothing; domains=nothing, vmap=nothing, both_ways=false, rev_cedges=false) where {T<:AbstractGraph}
+#     if vmap === nothing
+#         vmap = vertices(gr)
+#     end
+#     function localizenestedge(ng, ce, revedges::Bool)
+#         revedges == true ? localdomain = 2 : localdomain = 1
+#         src = ce.src[1] == localdomain ? ng.vmap[ce.src[2]] : (length(ng.grv), ce.src[2])
+#         dst = ce.dst[1] == localdomain ? ng.vmap[ce.dst[2]] : (length(ng.grv), ce.dst[2])
+#         NestedEdge(src, dst)
+#     end
+#     shallowcopy_verdges!(ng.flatgr, gr)
+#     if domains===nothing
+#         push!(ng.grv, gr)
+#         [push!(ng.vmap, (length(ng.grv), v)) for v in vmap]
+#     else
+#         add_vertex!(ng.grv[domains], gr, nedges; domains, dprops, vmap, both_ways, rev_cedges)
+#         [push!(ng.vmap, (domains, v)) for v in vmap]
+#     end
+#     if length(nedges) > 0
+#         offcedges = localizenestedge.([ng], nedges, rev_cedges)
+#         add_edges!(ng, offcedges, dprops; both_ways=both_ways)
+#     end
+#     return length(ng.grv)
+# end

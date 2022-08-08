@@ -6,6 +6,11 @@
 - employ Term.jl to show info
 - produce easy benchmarks
 - what functions return
+- publish package (+ github actions integrations)
+- License
+- divide MetaGraphs from `NestedGraphs`
+- sugar syntax (maybe macros)
+- deleting indices/edges
 
 ## Docu
 each nested graph is a domain

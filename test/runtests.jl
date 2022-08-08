@@ -5,5 +5,5 @@ using TestSetExtensions
 include("testutils.jl")
 
 @testset "NestedGraphs.jl" begin
-     @includetests ["simple", "metagraphs"]
+    @includetests ["simple", "simpleadd", "metagraphs"]
 end

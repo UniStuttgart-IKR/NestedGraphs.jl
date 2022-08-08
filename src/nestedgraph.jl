@@ -42,26 +42,37 @@ struct NestedGraph{T <: Integer, R <: AbstractGraph{T}, N <: Union{AbstractGraph
     # TODO create a synchro Dict{Tuple{Int, Int}, Int} for reverse operation
 end
 
-Base.show(io::IO, t::NestedGraph{T,R}) where {T,R} = print(io, "NestedGraph{$(R)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) subnets)")
+Base.show(io::IO, t::NestedGraph{T,R,N}) where {T,R,N} = print(io, "NestedGraph{$(R),$(N)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) subnets)")
 NestedGraph{T,R}() where {T,R} = NestedGraph{T,R,R}()
 NestedGraph{T,R,N}() where {T,R,N} = NestedGraph(R(), Vector{N}(), Vector{NestedEdge{T}}(), Vector{Tuple{T,T}}())
 NestedGraph(::Type{R}) where {R<:AbstractGraph} = NestedGraph(R(), [R()], Vector{NestedEdge{Int}}(), Vector{Tuple{Int,Int}}())
 NestedGraph(grv::Vector{T}) where {T<:AbstractGraph} = NestedGraph(grv, Vector{NestedEdge{Int}}())
+NestedGraph(gr::T) where {T<:AbstractGraph} = NestedGraph([gr])
 function NestedGraph(grv::Vector{R}, edges::AbstractVector; both_ways::Bool=false) where {R<:AbstractGraph}
     nedgs = convert.(NestedEdge, edges)
-    flatgr = unwraptype(R)()
+    flatgrtype = unwraptype(R)
+    if !isconcretetype(flatgrtype)
+        flatgrtypes = [unwraptype(typeof(gr)) for gr in grv]
+        @assert all(==(flatgrtypes[1]), flatgrtypes)
+        flatgrtype = flatgrtypes[1]
+    end
+    flatgr = flatgrtype()
     vmap = Vector{Tuple{Int,Int}}()
     # transfer the graphs to flat graph
     for (i,g) in enumerate(grv)
         shallowcopy_verdges!(flatgr, g)
         [push!(vmap, (i,v)) for v in vertices(g)]
     end
-    # register nedgs between the graphs
-    add_edges!(flatgr, vmap, nedgs; both_ways = both_ways)
-    NestedGraph(flatgr, grv, nedgs, vmap)
+    ng = NestedGraph(flatgr, grv, Vector{NestedEdge{Int}}(), vmap)
+    for nedg in nedgs
+        add_edge!(ng, nedg)
+        both_ways && add_edge!(ng, reverse(nedg))
+    end
+    return ng
 end
 
 "Unwrap NestedGraph to Graph type"
+unwraptype(::Type{NestedGraph{T,R}}) where {T,R} = return unwraptype(R)
 unwraptype(::Type{NestedGraph{T,R,N}}) where {T,R,N} = return unwraptype(R)
 unwraptype(gt::Type{T}) where {T<:AbstractGraph} = return gt
 
