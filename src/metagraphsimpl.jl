@@ -2,7 +2,7 @@
 # the following interfaces must be implemented
 # TODO
 
-const NestedMetaGraph = NestedGraph{<:Integer,<:AbstractMetaGraph,<:AbstractGraph} 
+const NestedMetaGraph{T,R,N} = NestedGraph{<:Integer,<:AbstractMetaGraph,<:AbstractGraph} 
 
 # forward all operations to `flatgr`
 # shallow MetaGraphs props of `flatgr` will propage to the `grv`s
@@ -24,8 +24,9 @@ MetaGraphs.has_prop(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol) = 
 MetaGraphs.set_indexing_prop!(ng::NestedMetaGraph, props::Symbol) = MetaGraphs.set_indexing_prop!(ng.flatgr, props)
 
 
-function Graphs.add_vertex!(ng::NestedMetaGraph; domains=1, targetnode=nothing)
+function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}; domains=1, targetnode=nothing) where {T,R<:AbstractMetaGraph}
     domain = first(domains)
+    length(ng.grv) == 0 && (add_vertex!(ng, R()))
     isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
     Graphs.has_vertex(ng, domain, targetnode) && return false
     # Graphs.add_vertex!(ng.grv[domain])
@@ -34,13 +35,15 @@ function Graphs.add_vertex!(ng::NestedMetaGraph; domains=1, targetnode=nothing)
     push!(ng.vmap, (domain, targetnode) )
 end
 Graphs.add_vertex!(ng::NestedMetaGraph, s::Symbol, v; domains=1, targetnode=nothing) = add_vertex!(ng, Dict(s=>v); domains, targetnode)
-function Graphs.add_vertex!(ng::NestedMetaGraph, dpr::Dict{Symbol}; domains=1, targetnode=nothing)
+function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}, dpr::Dict{Symbol}; domains=1, targetnode=nothing) where {T,R<:AbstractMetaGraph}
     domain = first(domains)
+    length(ng.grv) == 0 && (add_vertex!(ng, R()))
     isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
     Graphs.has_vertex(ng, domain, targetnode) && return false
     # Graphs.add_vertex!(ng.grv[domain], dpr)
-    _propagate_to_nested(ng, Graphs.add_vertex!, domains, dpr)
     add_vertex!(ng.flatgr, dpr)
+    prs = props(ng.flatgr, nv(ng.flatgr))
+    _propagate_to_nested(ng, Graphs.add_vertex!, domains, prs)
     push!(ng.vmap, (domain, targetnode) )
 end
 function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T) where T<:Integer
@@ -57,12 +60,13 @@ end
 function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T, dpr::Dict{Symbol}) where T<:Integer
     srctup = ng.vmap[src]
     dsttup = ng.vmap[dst]
+    add_edge!(ng.flatgr, src, dst, dpr)
+    prs = props(ng.flatgr, src, dst)
     if srctup[1] != dsttup[1]
         push!(ng.neds, NestedEdge(srctup, dsttup))
     else
-        add_edge!(ng.grv[srctup[1]], srctup[2], dsttup[2], dpr)
+        add_edge!(ng.grv[srctup[1]], srctup[2], dsttup[2], prs)
     end
-    add_edge!(ng.flatgr, src, dst, dpr)
 end
 
 #

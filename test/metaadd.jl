@@ -48,4 +48,12 @@
  
     @test add_edge!(ngdyn, 16, 17)
     @test ne(ngdyn.grv[3]) == ne(ngdyn.grv[3]) == ne(ngdyn.grv[3].grv[3]) == ne(ngdyn.grv[3].grv[3].grv[1]) == 1 == ne(ngdyn) - 1
+    
+    testprops_recu(ngdyn)
+    # modify
+    for v in vertices(ngdyn)
+        prevprop = get_prop(ngdyn, v, :vel)
+        set_prop!(ngdyn, v, :vel, prevprop*"_mod")
+    end
+    testprops_recu(ngdyn)
 end

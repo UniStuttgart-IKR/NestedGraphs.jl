@@ -38,3 +38,19 @@ function basic_test(g1, g2, g3, g4, ng, ng1, ng2, ngm)
      
      # TODO test add_edges! add_vertices!
 end
+
+function testprops_recu(nmg)
+     for (n, (d, v)) in enumerate(nmg.vmap)
+          @test props(nmg, n) === props(nmg.grv[d], v)
+     end
+     for e in edges(nmg)
+          if !(e in interdomainedges(nmg))
+               ne = nestededge(nmg, e)
+               @test ne.src[1] == ne.dst[1]
+               @test props(nmg, e.src, e.dst) === props(nmg.grv[ne.src[1]], ne.src[2], ne.dst[2])
+          end
+     end
+     for gr in nmg.grv
+          gr isa NestedGraph && testprops_recu(gr)
+     end
+end
