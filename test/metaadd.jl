@@ -19,16 +19,16 @@
     add_vertex!(ngdyn, :vel, "2.7"; domains = 2)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7
 
-    ngin = add_vertex!(ngdyn, DynMNG())
-    add_vertex!(ngdyn, :vel, "3.1.1"; domains = ngin)
+    add_vertex!(ngdyn, DynMNG())
+    add_vertex!(ngdyn, :vel, "3.1.1"; domains = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
 
     sg2 = MetaGraph(2)
     [set_prop!(sg2, v, :vel, "3.1.$(v)") for v in vertices(sg2)]
-    add_vertex!(ngdyn, sg2, domains = ngin)
+    add_vertex!(ngdyn, sg2, domains = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-    add_vertex!(ngdyn, DynMNG(), domains = ngin)
+    add_vertex!(ngdyn, DynMNG(), domains = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
     # flatnode 15 enters in domain (3,4) 
@@ -56,4 +56,33 @@
         set_prop!(ngdyn, v, :vel, prevprop*"_mod")
     end
     testprops_recu(ngdyn)
+    
+    # inverse (copied code from simpleadd.jl)
+
+    # inverse - start deleting
+    rem_edge!(ngdyn, 16, 17)
+    @test ne(ngdyn.grv[3]) == ne(ngdyn.grv[3]) == ne(ngdyn.grv[3].grv[3]) == ne(ngdyn.grv[3].grv[3].grv[1]) == 0 == ne(ngdyn) - 1
+    
+    rem_edge!(ngdyn, 10, 15)
+    @test length(ngdyn.neds) == ne(ngdyn) == 0
+    
+    #TODO substitute with delete graph
+    [rem_vertex!(ngdyn, roll_vertex(ngdyn, [3,3,1])) for i in 1:2]
+    @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 4
+
+    rem_vertex!(ngdyn, roll_vertex(ngdyn, [3,2,3]))
+    @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
+
+    [rem_vertex!(ngdyn, roll_vertex(ngdyn, [3, 2, 1])) for i in 1:2]
+    @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
+
+    rem_vertex!(ngdyn, roll_vertex(ngdyn, [3,1,1]))
+    @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 0
+
+    rem_vertex!(ngdyn, roll_vertex(ngdyn, [2,7]))
+    @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 6
+    
+    #... tedious. There needs to be a system.
+
+    @test nv(ngdyn) == nv(ngdyn.grv[1]) + nv(ngdyn.grv[2]) + nv(ngdyn.grv[3])
 end

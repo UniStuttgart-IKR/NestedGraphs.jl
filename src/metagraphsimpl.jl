@@ -29,7 +29,6 @@ function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}; domains=1, targetnode=noth
     length(ng.grv) == 0 && (add_vertex!(ng, R()))
     isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
     Graphs.has_vertex(ng, domain, targetnode) && return false
-    # Graphs.add_vertex!(ng.grv[domain])
     _propagate_to_nested(ng, Graphs.add_vertex!, domains)
     shallowcopy_vertex!(ng.flatgr, ng.grv[domain], nv(ng.grv[domain]))
     push!(ng.vmap, (domain, targetnode) )
@@ -40,7 +39,6 @@ function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}, dpr::Dict{Symbol}; domains
     length(ng.grv) == 0 && (add_vertex!(ng, R()))
     isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
     Graphs.has_vertex(ng, domain, targetnode) && return false
-    # Graphs.add_vertex!(ng.grv[domain], dpr)
     add_vertex!(ng.flatgr, dpr)
     prs = props(ng.flatgr, nv(ng.flatgr))
     _propagate_to_nested(ng, Graphs.add_vertex!, domains, prs)
@@ -77,26 +75,30 @@ end
 # In order to avoid this and return a legit reference from a `Dict` I initialize one in that case.
 # TODO: raise issue in MetaGraphs ?
 #
-"Copy vertices and shallow references to data from `g2` to `g1`"
+"$(TYPEDSIGNATURES) Copy vertices and shallow references to data from `g2` to `g1`"
 function shallowcopy_vertices!(g1::R, g2::R) where {R<:AbstractMetaGraph}
     for n in vertices(g2)
         shallowcopy_vertex!(g1,g2,n)
     end
 end
+"$(TYPEDSIGNATURES)"
 shallowcopy_vertex!(g1, g2::R, n) where {R<:NestedMetaGraph} = shallowcopy_vertex!(g1,g2.flatgr,n)
+"$(TYPEDSIGNATURES)"
 function shallowcopy_vertex!(g1::R, g2::R, n) where {R<:AbstractMetaGraph}
     if ! MetaGraphs._hasdict(g2, n)
         set_props!(g2, n, Dict{Symbol,Any}())
     end
     Graphs.add_vertex!(g1, props(g2,n))
 end
-"Copy edges and shallow references to data from `g2` to `g1`"
+"$(TYPEDSIGNATURES) Copy edges and shallow references to data from `g2` to `g1`"
 function shallowcopy_edges!(g1::R, g2::R, offset::T) where {R<:AbstractMetaGraph, T<:Integer}
     for e in edges(g2)
         shallowcopy_edge!(g1, offset+e.src, offset+e.dst, g2, e.src, e.dst)
     end
 end
+"$(TYPEDSIGNATURES)"
 shallowcopy_edge!(g1, src1, dst1, g2::R, src2, dst2) where {R<:NestedMetaGraph} = shallowcopy_edge!(g1,src1,dst1,g2.flatgr,src2,dst2)
+"$(TYPEDSIGNATURES)"
 function shallowcopy_edge!(g1::R, src1::T, dst1::T, g2::R, src2::T, dst2::T) where {R<:AbstractMetaGraph,T<:Integer}
     if ! MetaGraphs._hasdict(g2, Edge(src2,dst2))
         set_props!(g2, Edge(src2, dst2), Dict{Symbol,Any}())

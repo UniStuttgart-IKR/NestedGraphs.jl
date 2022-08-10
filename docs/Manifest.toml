@@ -197,7 +197,9 @@ uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 
 [[deps.MetaGraphs]]
 deps = ["Graphs", "JLD2", "Random"]
-git-tree-sha1 = "2af69ff3c024d13bde52b34a2a7d6887d4e7b438"
+git-tree-sha1 = "cef928d8ae41531a512b1b9c360a74d4be84761d"
+repo-rev = "fixIssue29"
+repo-url = "https://github.com/filchristou/MetaGraphs.jl.git"
 uuid = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 version = "0.7.1"
 
@@ -214,7 +216,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 
 [[deps.NestedGraphs]]
-deps = ["AbstractTrees", "Graphs", "MetaGraphs", "MetaGraphsNext"]
+deps = ["AbstractTrees", "DocStringExtensions", "Graphs", "MetaGraphs", "MetaGraphsNext"]
 path = ".."
 uuid = "03c36417-ddab-428a-818d-5359aee292ef"
 version = "0.1.0"

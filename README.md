@@ -1,24 +1,16 @@
-# CompositeGraphs
+# NestedGraphs.jl
+For documentation please see [__](__).
+
 
 ## TODO
-- what to do with MetaGraphsNext ?
+- support for MetaGraphsNext.jl
 - tests for NestedGraphsMakie
-- employ Term.jl to show info
-- produce easy benchmarks
-- what functions return
+- employ Term.jl to show info (?)
+- benchmarks (?)
+- check consistency what functions return
 - publish package (+ github actions integrations)
 - License
 - divide MetaGraphs from `NestedGraphs`
 - sugar syntax (maybe macros)
-- deleting indices/edges
-
-## Docu
-each nested graph is a domain
-
-To have synchronized structures, only initialize and then call `NestedGraphs` methods
-to add/remove vertices/edges
-
-The first domain is always the "global domain"
-
-Althouygh technically is possible to have Nested{Nested{...}}} 
-the API e.g. add_edge! supports only 2-order nested for now
+- rem_vertex! for graphs
+- add_vertex! consistently return index of nested graph

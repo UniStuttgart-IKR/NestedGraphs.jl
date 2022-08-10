@@ -1,4 +1,4 @@
-"Add vertices and edges from `g2` to `g1`"
+"$(TYPEDSIGNATURES) Add vertices and edges from `g2` to `g1`"
 function shallowcopy_verdges!(g1::AbstractGraph, g2::AbstractGraph)
     offset = length(vertices(g1))
     shallowcopy_vertices!(g1, g2)
@@ -6,6 +6,7 @@ function shallowcopy_verdges!(g1::AbstractGraph, g2::AbstractGraph)
 end
 
 """
+$(TYPEDSIGNATURES) 
 Add the vertices from `g2` to `g1`.
 In case the vertices carry data, a shallow copy needs to be added.
 This way any update on the data propagates automatically across the whole `NestedGraph`.
@@ -18,6 +19,7 @@ function shallowcopy_vertices!(g1::AbstractGraph, g2::AbstractGraph)
 end
 
 """
+$(TYPEDSIGNATURES) 
 Add the edges from `g2` to `g1`.
 In case the edges carry data, a shallow copy needs to be added.
 This way any update on the data propagates automatically across the whole `NestedGraph`.
@@ -28,6 +30,53 @@ shallowcopy_edges!(g1::AbstractGraph, g2::NestedGraph, offset::Integer) = shallo
 function shallowcopy_edges!(g1::AbstractGraph, g2::AbstractGraph, offset::Integer)
     for e in edges(g2)
         add_edge!(g1, offset+e.src, offset+e.dst)
+    end
+end
+
+"$(TYPEDSIGNATURES) Unroll a nested vertex along all the nested graph domains"
+function unroll_vertex(ng::NestedGraph, v::T)  where T<:Integer
+    unr = Vector{T}()
+    nver = ng.vmap[v]
+    push!(unr, nver[1])
+    if ng.grv[nver[1]] isa NestedGraph
+        push!(unr, unroll_vertex(ng.grv[nver[1]], nver[2])...)
+    else
+        push!(unr, nver[2])
+    end
+    return unr
+end
+"""
+$(TYPEDSIGNATURES) 
+Given a vector of the nested inner domains get the index in the flat graph.
+The last element of the vector is handled as the node number in the `v[1:end-1]` inner nested graph
+"""
+function roll_vertex(ng::NestedGraph, v::AbstractVector{T}) where T<:Integer
+    if length(v) == 2
+        return vertex(ng, v...)
+    else
+        ngi = innergraph(ng, v[1:end-2])
+        vi = vertex(ngi, v[end-1:end]...)
+        deleteat!(v, length(v))
+        v[end] = vi
+        return roll_vertex(ng, v)
+    end
+end
+"$(TYPEDSIGNATURES) Get inner nested graph from a vector. Recursively calls `grv[v[1]].grv[v[2]]...`"
+function innergraph(ng::NestedGraph, v::AbstractVector)
+    if length(v) > 1
+        innergraph(ng.grv[v[1]], v[2:end])
+    elseif length(v) == 1
+        return ng.grv[v[1]]
+    end
+end
+
+"$(TYPEDSIGNATURES) For usage after single vertex removal only"
+function update_vmap_after_delete!(ng::NestedGraph, nver::Tuple{T,T}) where T<:Integer
+    for (i,vm) in enumerate(ng.vmap)
+        if vm[1] == nver[1] && vm[2] > nver[2] 
+            ng.vmap[i] = (vm[1], vm[2]-1)
+            break
+        end
     end
 end
 
