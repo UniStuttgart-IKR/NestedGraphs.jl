@@ -119,9 +119,6 @@ Success!
     
     julia> @test nv(ng2) == nv(ng2.grv[1]) + nv(ng2.grv[2])
     Test Passed
-      Expression: nv(ng2) == nv(ng2.grv[1]) + nv(ng2.grv[2])
-       Evaluated: 7 == 7
-
 
     julia> add_vertex!(sgs[1])  # this is how you shouldn't do it. Don't access directly the subgraphs.
     true
@@ -187,8 +184,6 @@ julia> add_edge!(ng, roll_vertex(ng, [3,2,1]), roll_vertex(ng, [3,2,2]));
 
 julia> @test ne(ng.grv[3]) == ne(ng.grv[3].grv[2]) == 1
 Test Passed
-  Expression: ne(ng.grv[3]) == ne((ng.grv[3]).grv[2]) == 1
-   Evaluated: 1 == 1 == 1
 ```
 
 !!! note
@@ -277,7 +272,6 @@ Of course, we are more constrained with types now:
 ```jldoctest walkthrough
 julia> @test_throws MethodError add_vertex!(ng2, DynNG())
 Test Passed
-  Expression: add_vertex!(ng2, DynNG())
       Thrown: MethodError
 ```
 

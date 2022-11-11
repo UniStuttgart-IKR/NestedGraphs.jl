@@ -24,6 +24,5 @@ The stored flat graph can be used to call all available functions from the [`Gra
 Contributors are welcome.
 For any ideas or bug reports, feel free to open an issue.
     
-# Acknowledgment 
-`NestedGraphs.jl` has been created for the analysis of multi-domain networks.\
-Part of this work has been performed in the framework of the CELTIC-NEXT EUREKA project AI-NET-ANTILLAS (Project ID C2019/3-3), and it is partly funded by the German BMBF (Project ID 16KIS1312).
+# Motivation 
+`NestedGraphs.jl` has been created for the analysis of multi-domain networks.
