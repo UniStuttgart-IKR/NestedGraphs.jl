@@ -1,16 +1,11 @@
 # NestedGraphs.jl
-For documentation please see [__](__).
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://UniStuttgart-IKR.github.io/NestedGraphs.jl/dev)
+[![codecov.io](http://codecov.io/github/UniStuttgart-IKR/NestedGraphs.jl/coverage.svg?branch=main)](http://codecov.io/github/UniStuttgart-IKR/NestedGraphs.jl?branch=main)
 
 
-## TODO
-- support for MetaGraphsNext.jl
-- tests for NestedGraphsMakie
-- employ Term.jl to show info (?)
-- benchmarks (?)
-- check consistency what functions return
-- publish package (+ github actions integrations)
-- License
-- divide MetaGraphs from `NestedGraphs`
-- sugar syntax (maybe macros)
-- rem_vertex! for graphs
-- add_vertex! consistently return index of nested graph
+*A package to handle nested graphs.*
+
+`NestedGraphs.jl` is a young project that aims at easy and type-stable graph analysis for nested graphs.
+This package is in an early development stage and might break often.
+
+The motivation behind the creation of `NestedGraphs.jl` was the analysis of multi-domain networks.

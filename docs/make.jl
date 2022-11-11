@@ -8,3 +8,7 @@ makedocs(sitename="NestedGraphs.jl",
         "Usage and Examples" => "usage.md",
         "API" => "API.md"
     ])
+
+deploydocs(
+    repo = "github.com/UniStuttgart-IKR/NestedGraphs.jl.git",
+)
