@@ -2,7 +2,7 @@
 
 julia_version = "1.8.1"
 manifest_format = "2.0"
-project_hash = "96cc2d17c29174996aa6a1422dc06a4c6d0498fa"
+project_hash = "34d9b2ee8fe245dfe103b07d98592d1733caf485"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "52b3b436f8f73133d7bc3a6c71ee7ed6ab2ab754"
@@ -140,12 +140,6 @@ deps = ["Graphs", "JLD2", "Random"]
 git-tree-sha1 = "2af69ff3c024d13bde52b34a2a7d6887d4e7b438"
 uuid = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 version = "0.7.1"
-
-[[deps.MetaGraphsNext]]
-deps = ["Graphs", "JLD2"]
-git-tree-sha1 = "46f9e8e3e27ee71026751fa015ab9c441ba7d51d"
-uuid = "fa8bd995-216d-47f1-8a91-f3b68fbeb377"
-version = "0.4.0"
 
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
