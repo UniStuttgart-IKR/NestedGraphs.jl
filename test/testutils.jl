@@ -18,11 +18,11 @@ function basic_test(g1, g2, g3, g4, ng, ng1, ng2, ngm)
      numnodes_sg1 = nv(g1)
 
      # add to csgm.grv[2].grv[1] aka sg3
-     add_vertex!(ngm; domains=2)
+     add_vertex!(ngm; subgraphs=2)
      @test nv(g3) == nv(ng.grv[3]) == nv(ng2.grv[1]) == nv(ngm.grv[2].grv[1]) == (numnodes_sg3+1)
 
      # add to csgm.grv[1].grv[2] aka sg2
-     add_vertex!(ngm; domains=[1,2])
+     add_vertex!(ngm; subgraphs=[1,2])
      @test nv(g2) == nv(ng.grv[2]) == nv(ng1.grv[2]) == nv(ngm.grv[1].grv[2]) == (numnodes_sg2+1)
      @test nv(ng1) == nv(g1) + nv(g2)
 
@@ -44,7 +44,7 @@ function testprops_recu(nmg)
           @test props(nmg, n) === props(nmg.grv[d], v)
      end
      for e in edges(nmg)
-          if !(e in interdomainedges(nmg))
+          if !(e in intersubgraphedges(nmg))
                ne = nestededge(nmg, e)
                @test ne.src[1] == ne.dst[1]
                @test props(nmg, e.src, e.dst) === props(nmg.grv[ne.src[1]], ne.src[2], ne.dst[2])
