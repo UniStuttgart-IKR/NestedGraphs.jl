@@ -7,36 +7,36 @@ Graphs.is_directed(ng::NestedGraph) = Graphs.is_directed(ng.flatgr)
 Graphs.inneighbors(ng::NestedGraph, v) = Graphs.inneighbors(ng.flatgr, v)
 
 "$(TYPEDSIGNATURES)"
-function _propagate_to_nested(ng, fun, domains::AbstractVector{T}, args...) where T<:Integer
-    if length(domains) > 2
-        fun(ng.grv[domains[1]], args...;domains=domains[2:end])
-    elseif length(domains) == 2
-        fun(ng.grv[domains[1]], args...;domains=domains[2])
+function _propagate_to_nested(ng, fun, subgraphs::AbstractVector{T}, args...) where T<:Integer
+    if length(subgraphs) > 2
+        fun(ng.grv[subgraphs[1]], args...;subgraphs=subgraphs[2:end])
+    elseif length(subgraphs) == 2
+        fun(ng.grv[subgraphs[1]], args...;subgraphs=subgraphs[2])
     else
-        fun(ng.grv[domains[1]], args...)
+        fun(ng.grv[subgraphs[1]], args...)
     end
 end
-_propagate_to_nested(ng, fun, domain::T, args...) where T<:Integer = fun(ng.grv[domain], args...)
+_propagate_to_nested(ng, fun, subgraph::T, args...) where T<:Integer = fun(ng.grv[subgraph], args...)
 
-"$(TYPEDSIGNATURES) `domain` is the nested graph to insert a node"
-function Graphs.add_vertices!(ng::NestedGraph, vs; domains=1)
-    domain = first(domain)
-    Graphs.add_vertices!(ng.grv[domain], vs)
-    _propagate_to_nested(ng, Graphs.add_vertices!, domains, vs)
-    rang = zip(Iterators.repeated(domain), nv(ng.grv[domain]):nv(ng.grv[domain])+vs)
+"$(TYPEDSIGNATURES) `subgraph` is the nested graph to insert a node"
+function Graphs.add_vertices!(ng::NestedGraph, vs; subgraphs=1)
+    subgraph = first(subgraph)
+    Graphs.add_vertices!(ng.grv[subgraph], vs)
+    _propagate_to_nested(ng, Graphs.add_vertices!, subgraphs, vs)
+    rang = zip(Iterators.repeated(subgraph), nv(ng.grv[subgraph]):nv(ng.grv[subgraph])+vs)
     push!(ng.vmap, rang... )
 end
 "$(TYPEDSIGNATURES) `targetnode` is the index of the entering node"
-function Graphs.add_vertex!(ng::NestedGraph{T,R}; domains=1, targetnode=nothing) where {T,R}
-    domain = first(domains)
+function Graphs.add_vertex!(ng::NestedGraph{T,R}; subgraphs=1, targetnode=nothing) where {T,R}
+    subgraph = first(subgraphs)
     length(ng.grv) == 0 && (add_vertex!(ng, R()))
-    isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
-    Graphs.has_vertex(ng, domain, targetnode) && return false
+    isnothing(targetnode) && (targetnode = nv(ng.grv[subgraph])+1)
+    Graphs.has_vertex(ng, subgraph, targetnode) && return false
     add_vertex!(ng.flatgr)
-    push!(ng.vmap, (domain, targetnode) )
-    _propagate_to_nested(ng, Graphs.add_vertex!, domains)
+    push!(ng.vmap, (subgraph, targetnode) )
+    _propagate_to_nested(ng, Graphs.add_vertex!, subgraphs)
 end
-#to do add `domains` argument
+#to do add `subgraphs` argument
 function Graphs.rem_vertex!(ng::NestedGraph, v::T) where T<:Integer
     Graphs.has_vertex(ng, v) || return false
     rem_vertex!(ng.flatgr, v)
@@ -84,17 +84,17 @@ Graphs.has_edge(ng::NestedGraph, n1, n2) = has_edge(ng.flatgr, n1, n2)
 #
 # Methods to enrich graph with more graphs
 #
-"$(TYPEDSIGNATURES) To create a new top-level domain, pass `domains=nothing` (default)"
-function Graphs.add_vertex!(ng::NestedGraph, gr::T; domains=nothing) where {T<:AbstractGraph}
+"$(TYPEDSIGNATURES) To create a new top-level subgraph, pass `subgraphs=nothing` (default)"
+function Graphs.add_vertex!(ng::NestedGraph, gr::T; subgraphs=nothing) where {T<:AbstractGraph}
     vmap = vertices(gr)
     shallowcopy_verdges!(ng.flatgr, gr)
-    if domains===nothing
+    if subgraphs===nothing
         push!(ng.grv, gr)
         [push!(ng.vmap, (length(ng.grv), v)) for v in vmap]
     else
-        nvbefore = nv(ng.grv[domains[1]])
-        _propagate_to_nested(ng, Graphs.add_vertex!, domains, gr)
-        [push!(ng.vmap, (domains[1], nvbefore+v)) for v in vmap]
+        nvbefore = nv(ng.grv[subgraphs[1]])
+        _propagate_to_nested(ng, Graphs.add_vertex!, subgraphs, gr)
+        [push!(ng.vmap, (subgraphs[1], nvbefore+v)) for v in vmap]
     end
 end
 
@@ -115,30 +115,30 @@ end
 add_vertex_old!(ng::NestedGraph, grv::T) where {T<:AbstractGraph} = Graphs.add_vertex!(ng, grv, Vector{NestedEdge{Int}}())
 """
 $(TYPEDSIGNATURES) 
-Add domain graph `gr` into the `NestedGraph` `ng`.
+Add subgraph graph `gr` into the `NestedGraph` `ng`.
 It connectes `gr` with `ng`
 """
-function add_vertex_old!(ng::NestedGraph, gr::T, nedges, dprops=nothing; domains=nothing, vmap=nothing, both_ways=false, rev_cedges=false) where {T<:AbstractGraph}
+function add_vertex_old!(ng::NestedGraph, gr::T, nedges, dprops=nothing; subgraphs=nothing, vmap=nothing, both_ways=false, rev_cedges=false) where {T<:AbstractGraph}
     if vmap === nothing
         vmap = vertices(gr)
     end
     function localizenestedge(ng, ce, revedges::Bool)
-        revedges == true ? localdomain = 2 : localdomain = 1
-        src = ce.src[1] == localdomain ? ng.vmap[ce.src[2]] : (length(ng.grv), ce.src[2])
-        dst = ce.dst[1] == localdomain ? ng.vmap[ce.dst[2]] : (length(ng.grv), ce.dst[2])
+        revedges == true ? localsubgraph = 2 : localsubgraph = 1
+        src = ce.src[1] == localsubgraph ? ng.vmap[ce.src[2]] : (length(ng.grv), ce.src[2])
+        dst = ce.dst[1] == localsubgraph ? ng.vmap[ce.dst[2]] : (length(ng.grv), ce.dst[2])
         NestedEdge(src, dst)
     end
     shallowcopy_verdges!(ng.flatgr, gr)
-    if domains===nothing
+    if subgraphs===nothing
         push!(ng.grv, gr)
         [push!(ng.vmap, (length(ng.grv), v)) for v in vmap]
     else
-        add_vertex!(ng.grv[domains], gr, nedges; domains, dprops, vmap, both_ways, rev_cedges)
-        [push!(ng.vmap, (domains, v)) for v in vmap]
+        add_vertex!(ng.grv[subgraphs], gr, nedges; subgraphs, dprops, vmap, both_ways, rev_cedges)
+        [push!(ng.vmap, (subgraphs, v)) for v in vmap]
     end
     if length(nedges) > 0
         offcedges = localizenestedge.([ng], nedges, rev_cedges)
-        add_edges!(ng, offcedges, dprops; both_ways=both_ways)
+        add_edge!(ng, offcedges, dprops; both_ways=both_ways)
     end
     return length(ng.grv)
 end

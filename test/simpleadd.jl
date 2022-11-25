@@ -11,25 +11,25 @@
     add_vertex!(ngdyn)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 6
 
-    add_vertex!(ngdyn, domains = 2)
+    add_vertex!(ngdyn, subgraphs = 2)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7
 
     add_vertex!(ngdyn, DynNG())
-    add_vertex!(ngdyn, domains = 3)
+    add_vertex!(ngdyn, subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
 
-    add_vertex!(ngdyn, SimpleGraph(2), domains = 3)
+    add_vertex!(ngdyn, SimpleGraph(2), subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-    add_vertex!(ngdyn, DynNG(), domains = 3)
+    add_vertex!(ngdyn, DynNG(), subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-    # flatnode 15 enters in domain (3,4) 
-    add_vertex!(ngdyn, domains=[3,2])
+    # flatnode 15 enters in subgraph (3,4) 
+    add_vertex!(ngdyn, subgraphs=[3,2])
     v15 = nv(NestedGraphs.innergraph(ngdyn, [3,2]))
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 4
 
-    add_vertex!(ngdyn, SimpleGraph(2), domains=[3,3])
+    add_vertex!(ngdyn, SimpleGraph(2), subgraphs=[3,3])
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 6
 
     @test nv(ngdyn.grv[3].grv[1]) == 1 && nv(ngdyn.grv[3].grv[2]) == 3 && nv(ngdyn.grv[3].grv[3]) == 2
