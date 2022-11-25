@@ -1,5 +1,7 @@
 "$(TYPEDEF) Used by GraphIO.jl for several file formats"
-struct NestedGraphFormat <: AbstractGraphFormat end
+struct NestedGraphFormat <: AbstractGraphFormat{x}
+    
+end
 
 """
 $(TYPEDEF)

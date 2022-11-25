@@ -143,7 +143,7 @@ Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [shallowcop
 #     end
 #     if length(nedges) > 0
 #         offcedges = localizenestedge.([ng], nedges, rev_cedges)
-#         add_edges!(ng, offcedges, dprops; both_ways=both_ways)
+#         add_edge!(ng, offcedges, dprops; both_ways=both_ways)
 #     end
 #     return length(ng.grv)
 # end
