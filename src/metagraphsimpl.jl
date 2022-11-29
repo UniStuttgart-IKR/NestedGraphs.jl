@@ -24,25 +24,25 @@ MetaGraphs.has_prop(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol) = 
 MetaGraphs.set_indexing_prop!(ng::NestedMetaGraph, props::Symbol) = MetaGraphs.set_indexing_prop!(ng.flatgr, props)
 
 
-function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}; domains=1, targetnode=nothing) where {T,R<:AbstractMetaGraph}
-    domain = first(domains)
+function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}; subgraphs=1, targetnode=nothing) where {T,R<:AbstractMetaGraph}
+    subgraph = first(subgraphs)
     length(ng.grv) == 0 && (add_vertex!(ng, R()))
-    isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
-    Graphs.has_vertex(ng, domain, targetnode) && return false
-    _propagate_to_nested(ng, Graphs.add_vertex!, domains)
-    shallowcopy_vertex!(ng.flatgr, ng.grv[domain], nv(ng.grv[domain]))
-    push!(ng.vmap, (domain, targetnode) )
+    isnothing(targetnode) && (targetnode = nv(ng.grv[subgraph])+1)
+    Graphs.has_vertex(ng, subgraph, targetnode) && return false
+    _propagate_to_nested(ng, Graphs.add_vertex!, subgraphs)
+    shallowcopy_vertex!(ng.flatgr, ng.grv[subgraph], nv(ng.grv[subgraph]))
+    push!(ng.vmap, (subgraph, targetnode) )
 end
-Graphs.add_vertex!(ng::NestedMetaGraph, s::Symbol, v; domains=1, targetnode=nothing) = add_vertex!(ng, Dict(s=>v); domains, targetnode)
-function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}, dpr::Dict{Symbol}; domains=1, targetnode=nothing) where {T,R<:AbstractMetaGraph}
-    domain = first(domains)
+Graphs.add_vertex!(ng::NestedMetaGraph, s::Symbol, v; subgraphs=1, targetnode=nothing) = add_vertex!(ng, Dict(s=>v); subgraphs, targetnode)
+function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}, dpr::Dict{Symbol}; subgraphs=1, targetnode=nothing) where {T,R<:AbstractMetaGraph}
+    subgraph = first(subgraphs)
     length(ng.grv) == 0 && (add_vertex!(ng, R()))
-    isnothing(targetnode) && (targetnode = nv(ng.grv[domain])+1)
-    Graphs.has_vertex(ng, domain, targetnode) && return false
+    isnothing(targetnode) && (targetnode = nv(ng.grv[subgraph])+1)
+    Graphs.has_vertex(ng, subgraph, targetnode) && return false
     add_vertex!(ng.flatgr, dpr)
     prs = props(ng.flatgr, nv(ng.flatgr))
-    _propagate_to_nested(ng, Graphs.add_vertex!, domains, prs)
-    push!(ng.vmap, (domain, targetnode) )
+    _propagate_to_nested(ng, Graphs.add_vertex!, subgraphs, prs)
+    push!(ng.vmap, (subgraph, targetnode) )
 end
 function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T) where T<:Integer
     srctup = ng.vmap[src]
@@ -114,7 +114,7 @@ Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [shallowcop
 # Methods to enrich graph with more graphs
 #
 # """
-# Add domain graph `gr` into the `NestedGraph` `ng`.
+# Add subgraph graph `gr` into the `NestedGraph` `ng`.
 # It connectes `gr` with `ng`
 
 # # Arguments
@@ -123,23 +123,23 @@ Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [shallowcop
 # - `both_ways`: add `nedges` also for the opposite direction
 # - `rev_cedges`: 
 # """
-# function Graphs.add_vertex!(ng::NestedGraph, gr::T, nedges, dprops=nothing; domains=nothing, vmap=nothing, both_ways=false, rev_cedges=false) where {T<:AbstractGraph}
+# function Graphs.add_vertex!(ng::NestedGraph, gr::T, nedges, dprops=nothing; subgraphs=nothing, vmap=nothing, both_ways=false, rev_cedges=false) where {T<:AbstractGraph}
 #     if vmap === nothing
 #         vmap = vertices(gr)
 #     end
 #     function localizenestedge(ng, ce, revedges::Bool)
-#         revedges == true ? localdomain = 2 : localdomain = 1
-#         src = ce.src[1] == localdomain ? ng.vmap[ce.src[2]] : (length(ng.grv), ce.src[2])
-#         dst = ce.dst[1] == localdomain ? ng.vmap[ce.dst[2]] : (length(ng.grv), ce.dst[2])
+#         revedges == true ? localsubgraph = 2 : localsubgraph = 1
+#         src = ce.src[1] == localsubgraph ? ng.vmap[ce.src[2]] : (length(ng.grv), ce.src[2])
+#         dst = ce.dst[1] == localsubgraph ? ng.vmap[ce.dst[2]] : (length(ng.grv), ce.dst[2])
 #         NestedEdge(src, dst)
 #     end
 #     shallowcopy_verdges!(ng.flatgr, gr)
-#     if domains===nothing
+#     if subgraphs===nothing
 #         push!(ng.grv, gr)
 #         [push!(ng.vmap, (length(ng.grv), v)) for v in vmap]
 #     else
-#         add_vertex!(ng.grv[domains], gr, nedges; domains, dprops, vmap, both_ways, rev_cedges)
-#         [push!(ng.vmap, (domains, v)) for v in vmap]
+#         add_vertex!(ng.grv[subgraphs], gr, nedges; subgraphs, dprops, vmap, both_ways, rev_cedges)
+#         [push!(ng.vmap, (subgraphs, v)) for v in vmap]
 #     end
 #     if length(nedges) > 0
 #         offcedges = localizenestedge.([ng], nedges, rev_cedges)

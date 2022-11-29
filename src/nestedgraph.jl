@@ -6,7 +6,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 A `NestedEdge` connects graphs inside a `NestedGraph` or simply nodes inside a `NestedGraph`.
 The `NestedEdge` connects two `NestedVertex`s.
-This means that every `NestedEdge` connects to a specific node and not as a hyperedge to the whole domain graph.
+This means that every `NestedEdge` connects to a specific node and not as a hyperedge to the whole subgraph graph.
 """
 struct NestedEdge{T<:Integer} <: AbstractSimpleEdge{T}
     src::Tuple{T, T}
@@ -23,7 +23,7 @@ Base.convert(::Type{NestedEdge}, e::Tuple{Tuple{T,T}, Tuple{T,T}}) where T<:Inte
 """
 $(TYPEDEF)
 A `NestedVertex` is the local view of a vertex inside a `NestedGraph`.
-It contains the domain and the vertex indices.
+It contains the subgraph and the vertex indices.
 Basically, it's an alias for a 2-element Tuple.
 """
 NestedVertex{T} = Tuple{T,T} where T<:Integer
@@ -37,18 +37,18 @@ NestedGraphs of NestedGraphs are allowed.
 """
 struct NestedGraph{T <: Integer, R <: AbstractGraph{T}, N <: Union{AbstractGraph, AbstractGraph}} <: AbstractGraph{T}
     #TODO modifying flatgr should modify grv, neds & modifying grv neds should modiufy flatgr
-    "Flat graph view combining all domain graphs given with the edges"
+    "Flat graph view combining all subgraph graphs given with the edges"
     flatgr::R
-    "Original domain graphs"
+    "Original subgraph graphs"
     grv::Vector{N}
-    "interdomain edges"
+    "intersubgraph edges"
     neds::Vector{NestedEdge{T}}
-    "Maps the nodes of flat network to the original graph (Domain, Node)"
+    "Maps the nodes of flat network to the original graph (subgraph, Node)"
     vmap::Vector{Tuple{T,T}}
     # TODO create a synchro Dict{Tuple{Int, Int}, Int} for reverse operation
 end
 
-Base.show(io::IO, t::NestedGraph{T,R,N}) where {T,R,N} = print(io, "NestedGraph{$(R),$(N)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) domains)")
+Base.show(io::IO, t::NestedGraph{T,R,N}) where {T,R,N} = print(io, "NestedGraph{$(R),$(N)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) subgraphs)")
 NestedGraph{T,R}() where {T,R} = NestedGraph{T,R,R}()
 NestedGraph{T,R,N}() where {T,R,N} = NestedGraph(R(), Vector{N}(), Vector{NestedEdge{T}}(), Vector{Tuple{T,T}}())
 NestedGraph(::Type{R}) where {R<:AbstractGraph} = NestedGraph(R(), [R()], Vector{NestedEdge{Int}}(), Vector{Tuple{Int,Int}}())
@@ -94,8 +94,8 @@ vertex(ng::NestedGraph, cv::NestedVertex) = vertex(ng, cv...)
 "$(TYPEDSIGNATURES)"
 vertex(ng::NestedGraph, d::T, v::T) where T<:Integer = findfirst(==((d,v)), ng.vmap)
 
-"$(TYPEDSIGNATURES) Get the domain index of a vertex `v`"
-domain(ng::NestedGraph, v::T) where T<:Integer = ng.vmap[v][1]
+"$(TYPEDSIGNATURES) Get the subgraph index of a vertex `v`"
+subgraph(ng::NestedGraph, v::T) where T<:Integer = ng.vmap[v][1]
 
 "$(TYPEDSIGNATURES) Convert a local view `NestedEdge` to a global view"
 edge(ng::NestedGraph, ce::NestedEdge) = Edge(vertex(ng, ce.src[1], ce.src[2]), vertex(ng, ce.dst[1], ce.dst[2]))
@@ -105,16 +105,16 @@ nestededge(ng::NestedGraph, e::Edge) = NestedEdge(ng.vmap[e.src], ng.vmap[e.dst]
 nestedvertex(ng::NestedGraph, v) = ng.vmap[v]
 """
 $(TYPEDSIGNATURES) 
-Get the domain of an edge
-If the edge connects 2 domains, it returns `nothing`
+Get the subgraph of an edge
+If the edge connects 2 subgraphs, it returns `nothing`
 """
-domainedge(ng::NestedGraph, e::Edge) = issamedomain(ng, e.src, e.dst) ? Edge(ng.vmap[e.src][2], ng.vmap[e.dst][2]) : nothing
-"$(TYPEDSIGNATURES) Checks if two nodes are in the same domain"
-issamedomain(ng::NestedGraph, v1::Int, v2::Int) = domain(ng, v1) == domain(ng,v2)
+subgraphedge(ng::NestedGraph, e::Edge) = issamesubgraph(ng, e.src, e.dst) ? Edge(ng.vmap[e.src][2], ng.vmap[e.dst][2]) : nothing
+"$(TYPEDSIGNATURES) Checks if two nodes are in the same subgraph"
+issamesubgraph(ng::NestedGraph, v1::Int, v2::Int) = subgraph(ng, v1) == subgraph(ng,v2)
 "$(TYPEDSIGNATURES)"
-issamedomain(ng::NestedGraph, e::Edge) = issamedomain(ng, e.src, e.dst) 
+issamesubgraph(ng::NestedGraph, e::Edge) = issamesubgraph(ng, e.src, e.dst) 
 "$(TYPEDSIGNATURES)"
-issamedomain(ce::NestedEdge) = ce.src[1] == ce.dst[1]
+issamesubgraph(ce::NestedEdge) = ce.src[1] == ce.dst[1]
 
-"$(TYPEDSIGNATURES) Get all edges that have no domain, i.e. that interconnect domains"
-interdomainedges(ng::NestedGraph) = [e for e in edges(ng) if ng.vmap[e.src][1] != ng.vmap[e.dst][1]]
+"$(TYPEDSIGNATURES) Get all edges that have no subgraph, i.e. that interconnect subgraphs"
+intersubgraphedges(ng::NestedGraph) = [e for e in edges(ng) if ng.vmap[e.src][1] != ng.vmap[e.dst][1]]
