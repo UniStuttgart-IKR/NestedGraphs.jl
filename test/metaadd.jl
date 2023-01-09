@@ -16,28 +16,28 @@
     add_vertex!(ngdyn, :vel, "1.4")
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 6
 
-    add_vertex!(ngdyn, :vel, "2.7"; domains = 2)
+    add_vertex!(ngdyn, :vel, "2.7"; subgraphs = 2)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7
 
     add_vertex!(ngdyn, DynMNG())
-    add_vertex!(ngdyn, :vel, "3.1.1"; domains = 3)
+    add_vertex!(ngdyn, :vel, "3.1.1"; subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
 
     sg2 = MetaGraph(2)
     [set_prop!(sg2, v, :vel, "3.1.$(v)") for v in vertices(sg2)]
-    add_vertex!(ngdyn, sg2, domains = 3)
+    add_vertex!(ngdyn, sg2, subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-    add_vertex!(ngdyn, DynMNG(), domains = 3)
+    add_vertex!(ngdyn, DynMNG(), subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-    # flatnode 15 enters in domain (3,4) 
-    add_vertex!(ngdyn, :vel, "3.3.1",domains=[3,2])
+    # flatnode 15 enters in subgraph (3,4) 
+    add_vertex!(ngdyn, :vel, "3.3.1",subgraphs=[3,2])
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 4
 
     sg3 = MetaGraph(2)
     [set_prop!(sg3, v, :vel, "3.3.2.$(v)") for v in vertices(sg3)]
-    add_vertex!(ngdyn, sg3, domains=[3,3])
+    add_vertex!(ngdyn, sg3, subgraphs=[3,3])
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 6
 
     @test nv(ngdyn.grv[3].grv[1]) == 1 && nv(ngdyn.grv[3].grv[2]) == 3 && nv(ngdyn.grv[3].grv[3]) == 2

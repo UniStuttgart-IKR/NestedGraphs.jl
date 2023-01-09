@@ -10,7 +10,7 @@ Lastly, all the top-level (nested) edges are stored in `neds`.
 
 For easier coding, we also define the struct [`NestedEdge`](@ref) and an alias type [`NestedVertex`](@ref).
 `NestedEdge` connects 2 `NestedVertex`s.
-A tuple of `Integer` describes `NestedVertex` as: (*domain_id*, *vertex_id*), where *vertex_id* is the id of the vertex in the specific domain (or subgraph).
+A tuple of `Integer` describes `NestedVertex` as: (*subgraph_id*, *vertex_id*), where *vertex_id* is the id of the vertex in the specific subgraph.
 
 A `NestedGraph` is defined by 3 parameters `{T,R,N}`, where:
 - `T` is the `Integer` type used in the graph.
@@ -27,7 +27,7 @@ julia> using NestedGraphs, Graphs; # initialize environment
 julia> DynNG = NestedGraph{Int, SimpleGraph{Int}, AbstractGraph}; # define the abstract type we will be working with
 
 julia> ng = DynNG()
-NestedGraph{SimpleGraph{Int64},AbstractGraph}({0,0}, 0 domains)
+NestedGraph{SimpleGraph{Int64},AbstractGraph}({0,0}, 0 subgraphs)
 ```
 
 Now we can directly start adding nodes or graphs in `ng`.
@@ -38,7 +38,7 @@ julia> add_vertex!(ng, SimpleGraph(3)); # add one graph
 julia> add_vertex!(ng, SimpleGraph(6)); # add another graph
 
 julia> ng
-NestedGraph{SimpleGraph{Int64},AbstractGraph}({9,0}, 2 domains)
+NestedGraph{SimpleGraph{Int64},AbstractGraph}({9,0}, 2 subgraphs)
 ```
 Now, `ng` has 2 subgraphs and overall 9 nodes.
 We can make the scenario more complicated and also add another nested graph.
@@ -49,25 +49,25 @@ julia> ng.grv
 3-element Vector{AbstractGraph}:
  {3, 0} undirected simple Int64 graph
  {6, 0} undirected simple Int64 graph
- NestedGraph{SimpleGraph{Int64},AbstractGraph}({0,0}, 0 domains)
+ NestedGraph{SimpleGraph{Int64},AbstractGraph}({0,0}, 0 subgraphs)
 ```
 We can see the three subgraphs stored inside `ng`.
-Now we can start adding end nodes to each domain.
+Now we can start adding end nodes to each subgraph.
 ```jldoctest walkthrough
-julia> add_vertex!(ng; domains=1);
+julia> add_vertex!(ng; subgraphs=1);
 
-julia> add_vertex!(ng; domains=2);
+julia> add_vertex!(ng; subgraphs=2);
 
-julia> add_vertex!(ng; domains=3);
+julia> add_vertex!(ng; subgraphs=3);
 
 julia> ng.grv
 3-element Vector{AbstractGraph}:
  {4, 0} undirected simple Int64 graph
  {7, 0} undirected simple Int64 graph
- NestedGraph{SimpleGraph{Int64},AbstractGraph}({1,0}, 1 domains)
+ NestedGraph{SimpleGraph{Int64},AbstractGraph}({1,0}, 1 subgraphs)
 ```
 Now all subgraphs have one more node.
-But the third subgraph didn't have any nested domains. So, where did that node go?
+But the third subgraph didn't have any nested subgraphs. So, where did that node go?
 Let's see...
 
 ```jldoctest walkthrough
@@ -75,14 +75,14 @@ julia> ng.grv[3].grv
 1-element Vector{AbstractGraph}:
  {1, 0} undirected simple Int64 graph
 ```
-When the `domains` keyword is not given, a default of `domains=1` is assumed.
+When the `subgraphs` keyword is not given, a default of `subgraphs=1` is assumed.
 Also, if there is no subgraph at all, a new one is created.
 This is done so that there is always a consistent mapping between the flat graph `flatgr` and the nested graphs `grv`.
 
 We can continue adding nodes/subgraphs.
 For example let's add another graph of 2 nodes inside the nested `NestedGraph` with index 3.
 ```jldoctest walkthrough
-julia> add_vertex!(ng, SimpleGraph(2); domains=3);
+julia> add_vertex!(ng, SimpleGraph(2); subgraphs=3);
 
 julia> ng.grv[3].grv
 2-element Vector{AbstractGraph}:
@@ -93,7 +93,7 @@ julia> ng.grv[3].grv
 And now, let's assume we would like to add a vertex in the 2nd subgraph of the third subgraph (i.e. on `ng.grv[3].grv[2]`).
 Then we would have to do
 ```jldoctest walkthrough
-julia> add_vertex!(ng, domains=[3,2]);
+julia> add_vertex!(ng, subgraphs=[3,2]);
 
 julia> ng.grv[3].grv
 2-element Vector{AbstractGraph}:
@@ -112,9 +112,9 @@ Success!
     julia> sgs = [SimpleGraph(3), SimpleGraph(3)];
 
     julia> ng2 = NestedGraph(sgs)
-    NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,0}, 2 domains)
+    NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,0}, 2 subgraphs)
 
-    julia> add_vertex!(ng2, domains=1) # that's how you should add/remove nodes/edges/graphs
+    julia> add_vertex!(ng2, subgraphs=1) # that's how you should add/remove nodes/edges/graphs
     true
     
     julia> @test nv(ng2) == nv(ng2.grv[1]) + nv(ng2.grv[2])
@@ -132,7 +132,7 @@ Success!
 # Removing nodes
  We can remove nodes with the `rem_vertex!` function.
  Assume we would like to remove the node we previously added, i.e. the 3rd node of the 2nd nested graph of the 3rd top-level nested graph. 
- So, the "path" to this node is `[3,2,3]` where the last element is the node id and all previous are the domain id's to follow.
+ So, the "path" to this node is `[3,2,3]` where the last element is the node id and all previous are the subgraph id's to follow.
  To remove that index we do:
 
 ```jldoctest walkthrough
@@ -158,25 +158,25 @@ For example to add an edge between the node 3 and node 8 of the `flatgr` you do:
 julia> add_edge!(ng, 3, 8);
 
 julia> ng
-NestedGraph{SimpleGraph{Int64},AbstractGraph}({14,1}, 3 domains)
+NestedGraph{SimpleGraph{Int64},AbstractGraph}({14,1}, 3 subgraphs)
 ```
 `{14,1}` specifies that the `NestedGraph` has 14 nodes and 1 edge, which we just added.
 You can again follow the previous style of calling `roll_vertex` to identify nodes.
 
-In the previous case the edge doesn't propagate to the the nested domains because it connects top-level domains.
+In the previous case the edge doesn't propagate to the the nested subgraphs because it connects top-level subgraphs.
 For this reason you can find it in the `neds` field
 ```jldoctest walkthrough
 julia> ng.neds
 1-element Vector{NestedEdge{Int64}}:
  Edge (1, 3) => (2, 5)
 ```
-Also see that the nested domains still don't have any edge:
+Also see that the nested subgraphs still don't have any edge:
 ```jldoctest walkthrough
 julia> ng.grv
 3-element Vector{AbstractGraph}:
  {4, 0} undirected simple Int64 graph
  {7, 0} undirected simple Int64 graph
- NestedGraph{SimpleGraph{Int64},AbstractGraph}({3,0}, 2 domains)
+ NestedGraph{SimpleGraph{Int64},AbstractGraph}({3,0}, 2 subgraphs)
 ```
 On the contrary doing the following will propage the edge all the way to the 2nd subgraph of the 3rd subgraph.
 ```jldoctest walkthrough
@@ -192,14 +192,14 @@ Test Passed
     julia> cgs = [complete_graph(3), complete_graph(3)];
 
     julia> ng3 = NestedGraph(cgs)
-    NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,6}, 2 domains)
+    NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,6}, 2 subgraphs)
     ```
     You can also initialize the `NestedGraph` with some edges between the nested graphs.
     For example initialize with 2 `NestedEdge`.
     That is a `NestedEdge` between the 2nd node of the 1st graph and the 3rd node of the 2nd graph and another one between the 1st node of the 1st graph and the 1 node of the 2nd graph.
     ```jldoctest walkthrough
     julia> ng4 = NestedGraph(cgs, [((1,2), (2,3)), ((1,1), (2,1))])
-    NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,8}, 2 domains)
+    NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,8}, 2 subgraphs)
     ```
 
 !!! info
@@ -263,7 +263,7 @@ true
 The same procedure follows with the definition of a non abstract typed `NestedGraph`.
 ```jldoctest walkthrough
 julia> ng5 = NestedGraph([SimpleGraph(3), SimpleGraph(3)])
-NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,0}, 2 domains)
+NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({6,0}, 2 subgraphs)
 
 julia> ng5 |> typeof # NestedGraph instance is type stable now
 NestedGraph{Int64, SimpleGraph{Int64}, SimpleGraph{Int64}}
@@ -295,7 +295,7 @@ julia> using MetaGraphs;
 julia> mgs = [MetaGraph(3), MetaGraph(3)];
 
 julia> nmg = NestedGraph(mgs)
-NestedGraph{MetaGraph{Int64, Float64},MetaGraph{Int64, Float64}}({6,0}, 2 domains)
+NestedGraph{MetaGraph{Int64, Float64},MetaGraph{Int64, Float64}}({6,0}, 2 subgraphs)
 ```
 Now we can add some data to the `Nested(Meta)Graph`:
 ```jldoctest walkthrough

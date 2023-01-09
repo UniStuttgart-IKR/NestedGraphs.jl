@@ -33,7 +33,7 @@ function shallowcopy_edges!(g1::AbstractGraph, g2::AbstractGraph, offset::Intege
     end
 end
 
-"$(TYPEDSIGNATURES) Unroll a nested vertex along all the nested graph domains"
+"$(TYPEDSIGNATURES) Unroll a nested vertex along all the nested graph subgraphs"
 function unroll_vertex(ng::NestedGraph, v::T)  where T<:Integer
     unr = Vector{T}()
     nver = ng.vmap[v]
@@ -47,7 +47,7 @@ function unroll_vertex(ng::NestedGraph, v::T)  where T<:Integer
 end
 """
 $(TYPEDSIGNATURES) 
-Given a vector of the nested inner domains get the index in the flat graph.
+Given a vector of the nested inner subgraphs get the index in the flat graph.
 The last element of the vector is handled as the node number in the `v[1:end-1]` inner nested graph
 """
 function roll_vertex(ng::NestedGraph, v::AbstractVector{T}) where T<:Integer
