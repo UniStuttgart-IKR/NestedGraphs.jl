@@ -15,3 +15,12 @@
 This package is in an early development stage and might break often.
 
 The motivation behind the creation of `NestedGraphs.jl` was the analysis of multi-domain networks.
+
+### Developing and testing
+Setup the test environment using [Run.jl](https://github.com/tkf/Run.jl).
+Start julia inside the NestedGraphs dev-ed directory and then:
+```julia
+julia> using Run
+julia> Run.prepare_test() # instantiates and precompiles `./test/`
+julia> Run.test()         # test package
+```
