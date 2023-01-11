@@ -54,3 +54,48 @@ function testprops_recu(nmg)
           gr isa NestedGraph && testprops_recu(gr)
      end
 end
+
+function test_simple_top()
+    DynNG = NestedGraph{Int, SimpleGraph{Int}, AbstractGraph}
+    ngdyn = DynNG()
+    add_vertex!(ngdyn, SimpleGraph(3))
+    add_vertex!(ngdyn, SimpleGraph(6))
+    add_vertex!(ngdyn)
+    add_vertex!(ngdyn, subgraphs = 2)
+    add_vertex!(ngdyn, DynNG())
+    ngin = length(ngdyn.grv)
+    add_vertex!(ngdyn, subgraphs = ngin)
+    add_vertex!(ngdyn, SimpleGraph(2), subgraphs = ngin)
+    add_vertex!(ngdyn, DynNG(), subgraphs = ngin)
+    add_vertex!(ngdyn, subgraphs=[3,2])
+    add_vertex!(ngdyn, SimpleGraph(2), subgraphs=[3,3])
+    add_edge!(ngdyn, 1,8)
+    add_edge!(ngdyn, 2,9)
+    return ngdyn
+end
+
+function test_meta_top()
+    DynMNG = NestedGraph{Int, MetaGraph{Int,Float64}, AbstractGraph}
+    ngdyn = DynMNG(extrasubgraph=false)    
+    sg1 = MetaGraph(3)
+    [set_prop!(sg1, v, :vel, "1.$(v)") for v in vertices(sg1)]
+    add_vertex!(ngdyn, sg1)
+    add_vertex!(ngdyn, MetaGraph(6))
+    # ngdyn.grv[2] and ngdyn.flatgr `Dict` are shallow copies
+    [set_prop!(ngdyn.grv[2], v, :vel, "2.$(v)") for v in 1:6]
+    # flatnode 10 enters in vmap (1,4)
+    add_vertex!(ngdyn, :vel, "1.4")
+    add_vertex!(ngdyn, :vel, "2.7"; subgraphs = 2)
+    add_vertex!(ngdyn, DynMNG(extrasubgraph=false))
+    add_vertex!(ngdyn, :vel, "3.1.1"; subgraphs = 3)
+    sg2 = MetaGraph(2)
+    [set_prop!(sg2, v, :vel, "3.1.$(v)") for v in vertices(sg2)]
+    add_vertex!(ngdyn, sg2, subgraphs = 3)
+    add_vertex!(ngdyn, DynMNG(extrasubgraph=false), subgraphs = 3)
+    # flatnode 15 enters in subgraph (3,4) 
+    add_vertex!(ngdyn, :vel, "3.3.1",subgraphs=[3,2])
+    sg3 = MetaGraph(2)
+    [set_prop!(sg3, v, :vel, "3.3.2.$(v)") for v in vertices(sg3)]
+    add_vertex!(ngdyn, sg3, subgraphs=[3,3])
+    return ngdyn
+end

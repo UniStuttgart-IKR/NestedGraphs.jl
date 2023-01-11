@@ -147,9 +147,34 @@ julia> ng.grv[3].grv # see that index is deleted
  {2, 0} undirected simple Int64 graph
 
 ```
+Similarly we can delete nodes directly by specifying the unrolled path to that node.
+For example the above block does equivalent job to this:
 
-For now removing works only for nodes and not for graphs.
-Support of removing graphs is on the way (not particularly hard to implement).
+```jldoctest walkthrough
+julia> add_vertex!(ng; subgraphs = [3,2]) # restore previously removed node
+true
+
+julia> rem_vertex!(ng, [3,2,3]) # directly remove node
+```
+If the specified path doesn't point to a node, but to a graph, this whole graph is deleted instead.
+
+```jldoctest walkthrough
+julia> add_vertex!(ng, SimpleGraph(10); subgraphs=[3]); # add a graph that we will delete later
+
+julia> ng.grv[3].grv
+3-element Vector{AbstractGraph}:
+ {1, 0} undirected simple Int64 graph
+ {2, 0} undirected simple Int64 graph
+ {10, 0} undirected simple Int64 graph
+
+julia> rem_vertex!(ng, [3,3]) # delete previously added graph
+
+julia> ng.grv[3].grv
+2-element Vector{AbstractGraph}:
+ {1, 0} undirected simple Int64 graph
+ {2, 0} undirected simple Int64 graph
+
+```
 
 # Handling Edges
 Similarly we can use the `add_edge!` and `rem_edge!`.

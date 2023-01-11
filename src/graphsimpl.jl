@@ -43,9 +43,25 @@ function Graphs.rem_vertex!(ng::NestedGraph, v::T) where T<:Integer
     nver = ng.vmap[v]
     rem_vertex!(ng.grv[nver[1]], nver[2])
     deleteat!(ng.vmap, v)
-    update_vmap_after_delete!(ng, nver)
+    update_vmapneds_after_delete!(ng, nver)
 end
 
+"$(TYPEDSIGNATURES)  Remove node or graph identified by `path2rem`."
+function Graphs.rem_vertex!(ng::NestedGraph, path2rem::Vector{T}) where T<:Integer
+    if !isagraph(ng, path2rem)
+        rem_vertex!(ng, roll_vertex(ng, path2rem))
+    else
+        gr2del = innergraph(ng, path2rem)
+        for v in vertices(gr2del)
+            path2remvert = vcat(path2rem, [1]) #always delete the first one. others will be pushed.
+            rem_vertex!(ng, roll_vertex(ng, path2remvert))
+        end
+        parentgr = length(path2rem) > 1 ? innergraph(ng, path2rem[1:end-1]) : ng
+        deleteat!(parentgr.grv, path2rem[end])
+        update_vmapneds_after_delete_graph!(parentgr, path2rem[end])
+        # updatge vmap and neds (the subgraph id part)
+    end
+end
 
 Graphs.add_edge!(ng::NestedGraph, ce::NestedEdge) = add_edge!(ng, edge(ng, ce))
 Graphs.add_edge!(ng::NestedGraph, e::Edge) = Graphs.add_edge!(ng, e.src, e.dst)

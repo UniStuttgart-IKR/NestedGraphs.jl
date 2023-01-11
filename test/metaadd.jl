@@ -87,6 +87,6 @@
     @test nv(ngdyn) == nv(ngdyn.grv[1]) + nv(ngdyn.grv[2]) + nv(ngdyn.grv[3])
 
     # extra subgraph
-    ngdyn2 = DynMNG()    
+    ngdyn2 = DynMNG(;extrasubgraph=true)    
     @test length(ngdyn2.grv) == 1
 end

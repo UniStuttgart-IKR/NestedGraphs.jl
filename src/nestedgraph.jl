@@ -55,7 +55,7 @@ $(TYPEDSIGNATURES)
 
 `extrasubgraph` controls the `NestedGraph` should be initialized with an empty subgraph
 """
-function NestedGraph{T,R,N}(;extrasubgraph::Bool=true) where {T,R,N} 
+function NestedGraph{T,R,N}(;extrasubgraph::Bool=false) where {T,R,N} 
     ng = NestedGraph(R(), Vector{N}(), Vector{NestedEdge{T}}(), Vector{Tuple{T,T}}())
     extrasubgraph && add_vertex!(ng, R())
     return ng

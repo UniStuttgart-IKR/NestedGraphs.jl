@@ -70,13 +70,57 @@ function innergraph(ng::NestedGraph, v::AbstractVector)
     end
 end
 
+"$(TYPEDSIGNATURES) Check if path id `v` can represent a graph."
+function isagraph(ng::NestedGraph, v::AbstractVector)
+    if length(v) > 1
+        if 0 <= v[1] <= length(ng.grv)
+            isagraph(ng.grv[v[1]], v[2:end])
+        else
+            return false
+        end
+    elseif length(v) == 1
+        return 0 <= v[1] <= length(ng.grv)
+    end
+end
+isagraph(ng::AbstractGraph, v::AbstractVector) = false
+
 "$(TYPEDSIGNATURES) For usage after single vertex removal only"
-function update_vmap_after_delete!(ng::NestedGraph, nver::Tuple{T,T}) where T<:Integer
+function update_vmapneds_after_delete!(ng::NestedGraph, nver::Tuple{T,T}) where T<:Integer
     for (i,vm) in enumerate(ng.vmap)
         if vm[1] == nver[1] && vm[2] > nver[2] 
             ng.vmap[i] = (vm[1], vm[2]-1)
-            break
         end
+    end
+    filter!(ned -> src(ned) != nver && dst(ned) != nver, ng.neds)
+    for (i,ned) in enumerate(ng.neds)
+        vms = src(ned)
+        vmd = dst(ned)
+        if vms[1] == nver[1] && vms[2] > nver[2] 
+            vms = (vms[1], vms[2]-1)
+        end
+        if vmd[1] == nver[1] && vmd[2] > nver[2] 
+            vmd = (vmd[1], vmd[2]-1)
+        end
+        ng.neds[i] = NestedEdge(vms, vmd)
+    end
+end
+
+function update_vmapneds_after_delete_graph!(ng::NestedGraph, grid::T) where T<:Integer
+    for (i,vm) in enumerate(ng.vmap)
+        if vm[1] > grid 
+            ng.vmap[i] = (vm[1]-1, vm[2])
+        end
+    end
+    for (i,ned) in enumerate(ng.neds)
+        vms = src(ned)
+        vmd = dst(ned)
+        if vms[1] > grid
+            vms = (vms[1]-1, vms[2])
+        end
+        if vmd[1] > grid
+            vmd = (vmd[1]-1, vmd[2])
+        end
+        ng.neds[i] = NestedEdge(vms, vmd)
     end
 end
 
