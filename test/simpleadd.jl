@@ -1,6 +1,6 @@
 @testset "simpleadd.jl" begin
     DynNG = NestedGraph{Int, SimpleGraph{Int}, AbstractGraph}
-    ngdyn = DynNG()    
+    ngdyn = DynNG(extrasubgraph=false)    
     add_vertex!(ngdyn, SimpleGraph(3))
     @test nv(ngdyn.grv[1]) == 3
 
@@ -14,14 +14,14 @@
     add_vertex!(ngdyn, subgraphs = 2)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7
 
-    add_vertex!(ngdyn, DynNG())
+    add_vertex!(ngdyn, DynNG(extrasubgraph=false))
     add_vertex!(ngdyn, subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
 
     add_vertex!(ngdyn, SimpleGraph(2), subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-    add_vertex!(ngdyn, DynNG(), subgraphs = 3)
+    add_vertex!(ngdyn, DynNG(extrasubgraph=false), subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
     # flatnode 15 enters in subgraph (3,4) 
@@ -67,4 +67,8 @@
     #... tedious. There needs to be a system.
 
     @test nv(ngdyn) == nv(ngdyn.grv[1]) + nv(ngdyn.grv[2]) + nv(ngdyn.grv[3])
+
+    # extra subgraph
+    ngdyn2 = DynNG()    
+    @test length(ngdyn2.grv) == 1
 end

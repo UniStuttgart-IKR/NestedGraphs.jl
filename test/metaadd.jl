@@ -1,6 +1,6 @@
 @testset "metaadd.jl" begin
     DynMNG = NestedGraph{Int, MetaGraph{Int,Float64}, AbstractGraph}
-    ngdyn = DynMNG()    
+    ngdyn = DynMNG(extrasubgraph=false)    
 
     sg1 = MetaGraph(3)
     [set_prop!(sg1, v, :vel, "1.$(v)") for v in vertices(sg1)]
@@ -19,7 +19,7 @@
     add_vertex!(ngdyn, :vel, "2.7"; subgraphs = 2)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7
 
-    add_vertex!(ngdyn, DynMNG())
+    add_vertex!(ngdyn, DynMNG(extrasubgraph=false))
     add_vertex!(ngdyn, :vel, "3.1.1"; subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
 
@@ -28,7 +28,7 @@
     add_vertex!(ngdyn, sg2, subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
-    add_vertex!(ngdyn, DynMNG(), subgraphs = 3)
+    add_vertex!(ngdyn, DynMNG(extrasubgraph=false), subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
     # flatnode 15 enters in subgraph (3,4) 
@@ -85,4 +85,8 @@
     #... tedious. There needs to be a system.
 
     @test nv(ngdyn) == nv(ngdyn.grv[1]) + nv(ngdyn.grv[2]) + nv(ngdyn.grv[3])
+
+    # extra subgraph
+    ngdyn2 = DynMNG()    
+    @test length(ngdyn2.grv) == 1
 end

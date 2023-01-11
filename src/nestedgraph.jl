@@ -50,10 +50,25 @@ end
 
 Base.show(io::IO, t::NestedGraph{T,R,N}) where {T,R,N} = print(io, "NestedGraph{$(R),$(N)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) subgraphs)")
 NestedGraph{T,R}() where {T,R} = NestedGraph{T,R,R}()
-NestedGraph{T,R,N}() where {T,R,N} = NestedGraph(R(), Vector{N}(), Vector{NestedEdge{T}}(), Vector{Tuple{T,T}}())
+"""
+$(TYPEDSIGNATURES) 
+
+`extrasubgraph` controls the `NestedGraph` should be initialized with an empty subgraph
+"""
+function NestedGraph{T,R,N}(;extrasubgraph::Bool=true) where {T,R,N} 
+    ng = NestedGraph(R(), Vector{N}(), Vector{NestedEdge{T}}(), Vector{Tuple{T,T}}())
+    extrasubgraph && add_vertex!(ng, R())
+    return ng
+end
 NestedGraph(::Type{R}) where {R<:AbstractGraph} = NestedGraph(R(), [R()], Vector{NestedEdge{Int}}(), Vector{Tuple{Int,Int}}())
 NestedGraph(grv::Vector{T}) where {T<:AbstractGraph} = NestedGraph(grv, Vector{NestedEdge{Int}}())
 NestedGraph(gr::T) where {T<:AbstractGraph} = NestedGraph([gr])
+
+"""
+$(TYPEDSIGNATURES) 
+
+`both_ways` controls whether edges should be added also in reverse.
+"""
 function NestedGraph(grv::Vector{R}, edges::AbstractVector; both_ways::Bool=false) where {R<:AbstractGraph}
     nedgs = convert.(NestedEdge, edges)
     flatgrtype = unwraptype(R)
