@@ -14,7 +14,12 @@
 `NestedGraphs.jl` is a young project that aims at easy and type-stable graph analysis for nested graphs.
 This package is in an early development stage and might break often.
 
-The motivation behind the creation of `NestedGraphs.jl` was the analysis of multi-domain networks.
+### Installing 
+```julia
+julia> import Pkg
+julia> Pkg.add("NestedGraphs")
+julia> using NestedGraphs
+```
 
 ### Developing and testing
 Setup the test environment using [Run.jl](https://github.com/tkf/Run.jl).
