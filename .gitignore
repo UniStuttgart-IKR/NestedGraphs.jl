@@ -2,3 +2,4 @@ mynotes.norg
 docs/build/
 *.cov
 Manifest.toml
+test/livetest.jl

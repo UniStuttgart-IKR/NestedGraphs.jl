@@ -44,7 +44,7 @@ function testprops_recu(nmg)
           @test props(nmg, n) === props(nmg.grv[d], v)
      end
      for e in edges(nmg)
-          if !(e in intersubgraphedges(nmg))
+          if !(e in getnestededges(nmg))
                ne = nestededge(nmg, e)
                @test ne.src[1] == ne.dst[1]
                @test props(nmg, e.src, e.dst) === props(nmg.grv[ne.src[1]], ne.src[2], ne.dst[2])

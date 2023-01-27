@@ -132,4 +132,54 @@ issamesubgraph(ng::NestedGraph, e::Edge) = issamesubgraph(ng, e.src, e.dst)
 issamesubgraph(ce::NestedEdge) = ce.src[1] == ce.dst[1]
 
 "$(TYPEDSIGNATURES) Get all edges that have no subgraph, i.e. that interconnect subgraphs"
-intersubgraphedges(ng::NestedGraph) = [e for e in edges(ng) if ng.vmap[e.src][1] != ng.vmap[e.dst][1]]
+getnestededges(ng::NestedGraph) = [e for e in edges(ng) if ng.vmap[e.src][1] != ng.vmap[e.dst][1]]
+
+"$(TYPEDSIGNATURES) Get flat graph by substituting graphs identified with `subgrpaths` with nodes. Return also a mapping."
+function getfoldedgraph(ng::NestedGraph, subgrpaths::Vector{Vector{T}}) where T<:Integer
+    sqverts = [vertices(ng, subgrpath) for subgrpath in subgrpaths if isagraph(ng, subgrpath)]
+    getsquashedgraph(ng, sqverts)
+end
+
+"""
+$(TYPEDSIGNATURES) 
+
+Get all id path that lead to a subgraph, starting with `startingpath`.
+If no `startingpath` is given, search all subgraphs.
+"""
+function getallsubgraphpaths(ng::NestedGraph; startingpath::Vector{T}=Int[]) where T<:Integer
+    subgrpaths = Vector{Vector{Int}}()
+    if isagraph(ng, startingpath)
+        _getallsubgraphpaths(innergraph(ng, startingpath); startingpath, subgrpaths)
+    end
+end
+
+_getallsubgraphpaths(ng::AbstractGraph; startingpath::Vector{T}=Int[], subgrpaths::Vector{Vector{T}}) where T<:Integer = [startingpath]
+function _getallsubgraphpaths(ng::NestedGraph; startingpath::Vector{T}=Int[], subgrpaths::Vector{Vector{T}}) where T<:Integer
+    for (i,sg) in enumerate(ng.grv)
+        pathtosubgr = vcat(startingpath, [i])
+        push!(subgrpaths, pathtosubgr)
+        _getallsubgraphpaths(sg; startingpath=pathtosubgr, subgrpaths)
+    end
+    subgrpaths
+end
+
+"$(TYPEDSIGNATURES) Get all subvertices categorized per subgraph."
+function getallsubvertices(ng; startingpath::Vector{T}=Int[]) where T<:Integer
+    subgrpaths = getallsubgraphpaths(ng; startingpath)
+    vertices.([ng], subgrpaths)
+end
+
+"$(TYPEDSIGNATURES) Get total number of subgraphs"
+function gettotalsubgraphs(ng::NestedGraph)
+    counter = 0
+    _gettotalsubgraphs(ng, counter)
+end
+
+_gettotalsubgraphs(ng::AbstractGraph, counter) = counter
+function _gettotalsubgraphs(ng::NestedGraph, counter)
+    for sg in ng.grv
+        counter += 1
+        counter = _gettotalsubgraphs(sg, counter)
+    end
+    counter
+end

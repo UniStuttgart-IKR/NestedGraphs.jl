@@ -344,3 +344,66 @@ The same holds for deeper nested graphs and for edge data.
     This means more graph types can be supported.
     In the future we will disintegrate `MetaGraphs` from the `NestedGraphs.jl` to possibly an external package (or we might use [`Require.jl`](https://github.com/JuliaPackaging/Requires.jl)) in order to not always carry this dependency to the end users.
     In the future we would also like to support a type-stable version of `MetaGraphs`, the [`MetaGraphsNext.jl`](https://github.com/JuliaGraphs/MetaGraphsNext.jl).
+
+
+# A use case with multi layer graphs
+`NestedGraphs` provides an interface to handle structures of interacting graph groups.
+A common use case might be dealing with multi layer graphs.
+You can create a multi layer graph with the syntax already provided:
+```jldoctest walkthrough
+julia> layer1 = complete_graph(4)
+{4, 6} undirected simple Int64 graph
+
+julia> layer2 = barabasi_albert(4, 3; seed=123)
+{4, 3} undirected simple Int64 graph
+
+julia> layer3 = SimpleGraph(3)
+{3, 0} undirected simple Int64 graph
+
+julia> add_edge!(layer3, 1,2)
+true
+
+julia> add_edge!(layer3, 2,3)
+true
+
+julia> mlg = NestedGraph([layer1, layer2, layer3])  # now form the interlayer edges
+NestedGraph{SimpleGraph{Int64},SimpleGraph{Int64}}({11,11}, 3 subgraphs)
+
+julia> for v in 1:(nv(layer2)-1)
+           add_edge!(mlg, NestedEdge(1,v, 2,v))
+       end
+
+julia> for v in 1:(nv(layer3)-1)
+           add_edge!(mlg, NestedEdge(2,v, 3,v))
+       end
+
+julia> add_edge!(mlg, NestedEdge(1,4, 3,3))
+true
+```
+Using [NestedGraphMakie.jl](https://github.com/UniStuttgart-IKR/NestedGraphMakie.jl) you can visualize with `ngraphplot(mlg; multilayer=true, nlabels=repr.(mlg.vmap))`, which outputs:
+
+![Plot using NestedGraphMakie.jl](assets/mlgraph.png)
+
+For more visualizations have a look in the `NestedGraphMakie.jl` repository.
+
+`NestedGraphs.jl` offers some helpful functions which can often be used for multi layer graphs.
+You can get the squashed graph by merging all multi layer nodes together using
+```jldoctest walkthrough
+julia> sg,vm = getmlsquashedgraph(mlg)
+(SimpleGraph{Int64}(9, [[2, 3, 4, 5], [1, 3, 4, 5], [1, 2, 4, 5], [1, 2, 3], [1, 2, 3]]), [1, 2, 3, 4, 1, 2, 3, 5, 1, 2, 4])
+```
+`sg` is a simple graph, which if we plot we will get a graph like if all nodes were in the same layer.
+We plot using `GraphMakie.graphplot(sg)`
+
+![Plot using GraphMakie.jl](assets/squashedgraph.png)
+
+We can get all multi layer nodes groupped together with
+```jldoctest walkthrough
+julia> mlvertices = getmlvertices(mlg; subgraph_view=true)
+5-element Vector{Vector{Tuple{Int64, Int64}}}:
+ [(1, 1), (2, 1), (3, 1)]
+ [(1, 2), (2, 2), (3, 2)]
+ [(1, 3), (2, 3)]
+ [(1, 4), (3, 3)]
+ [(2, 4)]
+```

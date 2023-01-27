@@ -67,6 +67,8 @@ function innergraph(ng::NestedGraph, v::AbstractVector)
         innergraph(ng.grv[v[1]], v[2:end])
     elseif length(v) == 1
         return ng.grv[v[1]]
+    elseif length(v) == 0
+        return ng
     end
 end
 
@@ -80,6 +82,8 @@ function isagraph(ng::NestedGraph, v::AbstractVector)
         end
     elseif length(v) == 1
         return 0 <= v[1] <= length(ng.grv)
+    elseif length(v) == 0
+        return true
     end
 end
 isagraph(ng::AbstractGraph, v::AbstractVector) = false

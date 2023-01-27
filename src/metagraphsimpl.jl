@@ -10,6 +10,7 @@ MetaGraphs.set_prop!(ng::NestedMetaGraph, s::Symbol, val) = MetaGraphs.set_prop!
 MetaGraphs.set_prop!(ng::NestedMetaGraph, n::Integer, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, n, s, val)
 MetaGraphs.set_prop!(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, n1, n2, s, val)
 MetaGraphs.set_prop!(ng::NestedMetaGraph, e::Edge, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, e, s, val)
+MetaGraphs.set_prop!(ng::NestedMetaGraph, ne::NestedEdge, s::Symbol, val) = MetaGraphs.set_prop!(ng.flatgr, edge(ng, ne), s, val)
 MetaGraphs.get_prop(ng::NestedMetaGraph, s::Symbol) = MetaGraphs.get_prop(ng.flatgr, s)
 MetaGraphs.get_prop(ng::NestedMetaGraph, n::Integer, s::Symbol) = MetaGraphs.get_prop(ng.flatgr, n, s)
 MetaGraphs.get_prop(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol) = MetaGraphs.get_prop(ng.flatgr, n1, n2, s)
@@ -20,6 +21,8 @@ MetaGraphs.props(ng::NestedMetaGraph, n1::Integer, n2::Integer) = MetaGraphs.pro
 MetaGraphs.props(ng::NestedMetaGraph, e::Edge) = MetaGraphs.props(ng.flatgr, e)
 MetaGraphs.has_prop(ng::NestedMetaGraph, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, s)
 MetaGraphs.has_prop(ng::NestedMetaGraph, n::Integer, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, n, s)
+MetaGraphs.has_prop(ng::NestedMetaGraph, ne::NestedEdge, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, edge(ng, ne), s)
+MetaGraphs.has_prop(ng::NestedMetaGraph, e::Edge, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, src(e), dst(e), s)
 MetaGraphs.has_prop(ng::NestedMetaGraph, n1::Integer, n2::Integer, s::Symbol) = MetaGraphs.has_prop(ng.flatgr, n1, n2, s)
 MetaGraphs.set_indexing_prop!(ng::NestedMetaGraph, props::Symbol) = MetaGraphs.set_indexing_prop!(ng.flatgr, props)
 
