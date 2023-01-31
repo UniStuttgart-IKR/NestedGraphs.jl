@@ -70,7 +70,6 @@ function Graphs.rem_vertex!(ng::NestedGraph, path2rem::Vector{T}) where T<:Integ
         parentgr = length(path2rem) > 1 ? innergraph(ng, path2rem[1:end-1]) : ng
         deleteat!(parentgr.grv, path2rem[end])
         update_vmapneds_after_delete_graph!(parentgr, path2rem[end])
-        # updatge vmap and neds (the subgraph id part)
     end
 end
 
@@ -94,7 +93,7 @@ function Graphs.rem_edge!(ng::NestedGraph, src::T, dst::T) where T<:Integer
     srctup = ng.vmap[src]
     dsttup = ng.vmap[dst]
     if srctup[1] != dsttup[1]
-        deleteat!(ng.neds, findall(==(NestedEdge(srctup, dsttup)), ng.neds))
+        deleteat!(ng.neds, findfirst(==(NestedEdge(srctup, dsttup)), ng.neds))
     else
         rem_edge!(ng.grv[srctup[1]], srctup[2], dsttup[2])
     end
