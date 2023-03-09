@@ -1,3 +1,12 @@
+getgraphattr(ag::NestedGraph{T,G}, k) where {T<:Integer,G<:AbstractAttibuteGraph} = getgraphattr(graph(ag), k)
+getvertexattr(ag::NestedGraph{T,G}, k) where {T<:Integer,G<:AbstractAttibuteGraph} = getvertexattr(graph(ag), k)
+getedgeattr(ag::NestedGraph{T,G}, args...) where {T<:Integer,G<:AbstractAttibuteGraph} = getedgeattr(graph(ag), args...)
+
+hasgraphattr(ag::NestedGraph{T,G}, k) where {T<:Integer,G<:AbstractAttibuteGraph} = hasgraphattr(graph(ag), k)
+hasvertexattr(ag::NestedGraph{T,G}, k) where {T<:Integer,G<:AbstractAttibuteGraph} = hasvertexattr(graph(ag), k)
+hasedgeattr(ag::NestedGraph{T,G}, args...) where {T<:Integer,G<:AbstractAttibuteGraph} = hasedgeattr(graph(ag), args...)
+
+
 function addvertex!(ng::NestedGraph{T,G}; subgraphs=1) where {T<:Integer, G<:AbstractAttibuteGraph}
     subgraph = first(subgraphs)
     length(ng.grv) == 0 && (add_vertex!(ng, G()))

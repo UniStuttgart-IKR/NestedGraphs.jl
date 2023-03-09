@@ -4,8 +4,10 @@ Graphs.nv(ng::NestedGraph) = nv(ng.flatgr)
 Graphs.edges(ng::NestedGraph) = edges(ng.flatgr)
 Graphs.ne(ng::NestedGraph) = ne(ng.flatgr)
 Graphs.is_directed(ng::NestedGraph) = Graphs.is_directed(ng.flatgr)
+Graphs.is_directed(::Type{<:NestedGraph{T,R,N}}) where {T,R,N} = Graphs.is_directed(R)
 Graphs.inneighbors(ng::NestedGraph, v) = Graphs.inneighbors(ng.flatgr, v)
 Graphs.outneighbors(ng::NestedGraph, v) = Graphs.outneighbors(ng.flatgr, v)
+Graphs.adjacency_matrix(ng::NestedGraph) = Graphs.adjacency_matrix(ng.flatgr)
 
 "$(TYPEDSIGNATURES) Get vertices of the graph identified bt `subgrpath` path"
 function Graphs.vertices(ng::NestedGraph, subgrpath::Vector{T}) where T<:Int

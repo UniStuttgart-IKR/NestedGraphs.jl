@@ -1,7 +1,8 @@
 module NestedGraphs
 using Graphs
 using MetaGraphs, AttributeGraphs
-import AttributeGraphs: AbstractAttibuteGraph, addgraphattr!, remgraphattr!, addvertexattr!, remvertexattr!, addedgeattr!, remedgeattr!, graph_attr, vertex_attr, edge_attr, addvertex!, remvertex!, addedge!, remedge!
+using SimpleTraits
+import AttributeGraphs: AbstractAttibuteGraph, addgraphattr!, remgraphattr!, addvertexattr!, remvertexattr!, addedgeattr!, remedgeattr!, graph_attr, vertex_attr, edge_attr, addvertex!, remvertex!, addedge!, remedge!, hasedgeattr, hasgraphattr, hasvertexattr, getgraphattr, getvertexattr, getedgeattr
 
 using DocStringExtensions
 
