@@ -4,8 +4,10 @@ Graphs.nv(ng::NestedGraph) = nv(ng.flatgr)
 Graphs.edges(ng::NestedGraph) = edges(ng.flatgr)
 Graphs.ne(ng::NestedGraph) = ne(ng.flatgr)
 Graphs.is_directed(ng::NestedGraph) = Graphs.is_directed(ng.flatgr)
+Graphs.is_directed(::Type{<:NestedGraph{T,R,N}}) where {T,R,N} = Graphs.is_directed(R)
 Graphs.inneighbors(ng::NestedGraph, v) = Graphs.inneighbors(ng.flatgr, v)
 Graphs.outneighbors(ng::NestedGraph, v) = Graphs.outneighbors(ng.flatgr, v)
+Graphs.adjacency_matrix(ng::NestedGraph) = Graphs.adjacency_matrix(ng.flatgr)
 
 "$(TYPEDSIGNATURES) Get vertices of the graph identified bt `subgrpath` path"
 function Graphs.vertices(ng::NestedGraph, subgrpath::Vector{T}) where T<:Int
@@ -70,7 +72,6 @@ function Graphs.rem_vertex!(ng::NestedGraph, path2rem::Vector{T}) where T<:Integ
         parentgr = length(path2rem) > 1 ? innergraph(ng, path2rem[1:end-1]) : ng
         deleteat!(parentgr.grv, path2rem[end])
         update_vmapneds_after_delete_graph!(parentgr, path2rem[end])
-        # updatge vmap and neds (the subgraph id part)
     end
 end
 
@@ -94,7 +95,7 @@ function Graphs.rem_edge!(ng::NestedGraph, src::T, dst::T) where T<:Integer
     srctup = ng.vmap[src]
     dsttup = ng.vmap[dst]
     if srctup[1] != dsttup[1]
-        deleteat!(ng.neds, findall(==(NestedEdge(srctup, dsttup)), ng.neds))
+        deleteat!(ng.neds, findfirst(==(NestedEdge(srctup, dsttup)), ng.neds))
     else
         rem_edge!(ng.grv[srctup[1]], srctup[2], dsttup[2])
     end

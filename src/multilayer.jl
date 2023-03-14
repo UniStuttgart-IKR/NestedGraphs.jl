@@ -9,6 +9,7 @@ Get all multilayer vertices.
 Each multilayer vertex is composed by vertices of the graph that are connected and in different layers.
 In other words, return all nodes of `ng` that are connected through the interlinks, i.e., the NestedEdges,
 i.e., the edges connecting different layers, i.e., the edges connecting different subgraphs.
+Malfunctions if more nodes across layers are connected with several non-vertical ways.
 """
 function getmlvertices(ng::NestedGraph; subgraph_view=false)
     flatneds = [Edge(vertex(ng, src(ned)), vertex(ng, dst(ned))) for ned in ng.neds]
@@ -68,6 +69,20 @@ end
 
 # merge_vertices is not implemented ofr MetaGraphs
 function getsquashedgraph(ng::NestedGraph{T,R,N}, sqvertices::Vector{Vector{Q}}) where {T,R<:AbstractMetaGraph,N,Q<:Integer}
-    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
+#    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
+    squashedgraph = getsimplegraphcopy(ng)
     _rec_merge_vertices!(SimpleGraph(squashedgraph), sqvertices)
+end
+function getsquashedgraph(ng::NestedGraph{T,R,N}, sqvertices::Vector{Vector{Q}}) where {T,R<:AbstractAttibuteGraph,N,Q<:Integer}
+#    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
+    squashedgraph = getsimplegraphcopy(ng)
+    _rec_merge_vertices!(SimpleGraph(squashedgraph), sqvertices)
+end
+
+@traitfn function getsimplegraphcopy(ng::NestedGraph::IsDirected)
+    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleDiGraph
+end
+
+@traitfn function getsimplegraphcopy(ng::NestedGraph::!(IsDirected))
+    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
 end

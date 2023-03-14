@@ -47,6 +47,10 @@ struct NestedGraph{T <: Integer, R <: AbstractGraph{T}, N <: Union{AbstractGraph
     vmap::Vector{Tuple{T,T}}
     # TODO create a synchro Dict{Tuple{Int, Int}, Int} for reverse operation
 end
+"$(TYPEDSIGNATURES) Get the flat graph `NestedGraph.flatgr`"
+graph(ng::NestedGraph) = ng.flatgr
+"$(TYPEDSIGNATURES) Get the subgraphs `NestedGraph.grv`"
+graphs(ng::NestedGraph) = ng.grv
 
 Base.show(io::IO, t::NestedGraph{T,R,N}) where {T,R,N} = print(io, "NestedGraph{$(R),$(N)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) subgraphs)")
 NestedGraph{T,R}() where {T,R} = NestedGraph{T,R,R}()
