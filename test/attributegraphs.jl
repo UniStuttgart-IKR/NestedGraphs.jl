@@ -1,6 +1,6 @@
 @testset "attributegraphs" begin
-    nag = NestedGraph([AttributeGraph(;vvertex_type=String, edge_type=String, graph_type=Dict{Symbol, String}),
-                       AttributeGraph(;vvertex_type=String, edge_type=String, graph_type=Dict{Symbol, String})])
+    nag = NestedGraph([OAttributeGraph(;vertex_type=String, edge_type=String, graph_type=Dict{Symbol, String}),
+                       OAttributeGraph(;vertex_type=String, edge_type=String, graph_type=Dict{Symbol, String})])
 
     @test all([addvertex!(nag; subgraphs=1) for _ in 1:3])
     @test all([addvertex!(nag; subgraphs=2) for _ in 1:5])
