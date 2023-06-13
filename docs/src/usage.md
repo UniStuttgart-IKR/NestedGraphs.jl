@@ -127,6 +127,7 @@ Success!
     Test Failed at none:1
       Expression: nv(ng2) == nv(ng2.grv[1]) + nv(ng2.grv[2])
        Evaluated: 7 == 8
+
     ERROR: There was an error during testing
     ```
 # Removing nodes
@@ -301,7 +302,7 @@ Test Passed
 ```
 
 # MetaGraphs support
-`NestedGraphs.jl` comes with built-in support for [`MetaGraphs`](https://github.com/JuliaGraphs/MetaGraphs.jl).
+`NestedGraphs.jl` comes with built-in support for [`MetaGraphs`](https://github.com/JuliaGraphs/MetaGraphs.jl) using package extensions.
 Dealing with generic data in nested structures augments the problem of synchronization.
 This problem has already been solved for adding/deleting graphs/nodes/edges as shown previously.
 However these elements didn't contain any data.
@@ -342,8 +343,7 @@ The same holds for deeper nested graphs and for edge data.
 !!! info
     `NestedGraphs.jl` boils down to just being a wrapper.
     This means more graph types can be supported.
-    In the future we will disintegrate `MetaGraphs` from the `NestedGraphs.jl` to possibly an external package (or we might use [`Require.jl`](https://github.com/JuliaPackaging/Requires.jl)) in order to not always carry this dependency to the end users.
-    In the future we would also like to support a type-stable version of `MetaGraphs`, the [`MetaGraphsNext.jl`](https://github.com/JuliaGraphs/MetaGraphsNext.jl).
+    Future efforts will focus on incorporating more popular graph types into this package.
 
 
 # A use case with multi layer graphs

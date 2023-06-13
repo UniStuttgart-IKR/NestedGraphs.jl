@@ -1,6 +1,7 @@
-# In order to extend NestedGraphs.jl for a graph type,
-# the following interfaces must be implemented
-# TODO
+module NestedGraphsMetaGraphsExt
+
+using NestedGraphs, Graphs, DocStringExtensions
+using MetaGraphs
 
 const NestedMetaGraph{T,R,N} = NestedGraph{<:Integer,<:AbstractMetaGraph,<:AbstractGraph} 
 
@@ -32,8 +33,8 @@ function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}; subgraphs=1, targetnode=no
     length(ng.grv) == 0 && (add_vertex!(ng, R()))
     isnothing(targetnode) && (targetnode = nv(ng.grv[subgraph])+1)
     Graphs.has_vertex(ng, subgraph, targetnode) && return false
-    _propagate_to_nested(ng, Graphs.add_vertex!, subgraphs)
-    shallowcopy_vertex!(ng.flatgr, ng.grv[subgraph], nv(ng.grv[subgraph]))
+    NestedGraphs._propagate_to_nested(ng, Graphs.add_vertex!, subgraphs)
+    NestedGraphs.shallowcopy_vertex!(ng.flatgr, ng.grv[subgraph], nv(ng.grv[subgraph]))
     push!(ng.vmap, (subgraph, targetnode) )
 end
 Graphs.add_vertex!(ng::NestedMetaGraph, s::Symbol, v; subgraphs=1, targetnode=nothing) = add_vertex!(ng, Dict(s=>v); subgraphs, targetnode)
@@ -44,7 +45,7 @@ function Graphs.add_vertex!(ng::NestedMetaGraph{T,R}, dpr::Dict{Symbol}; subgrap
     Graphs.has_vertex(ng, subgraph, targetnode) && return false
     add_vertex!(ng.flatgr, dpr)
     prs = props(ng.flatgr, nv(ng.flatgr))
-    _propagate_to_nested(ng, Graphs.add_vertex!, subgraphs, prs)
+    NestedGraphs._propagate_to_nested(ng, Graphs.add_vertex!, subgraphs, prs)
     push!(ng.vmap, (subgraph, targetnode) )
 end
 function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T) where T<:Integer
@@ -55,7 +56,7 @@ function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T) where T<:Integer
         add_edge!(ng.flatgr, src, dst)
     else
         add_edge!(ng.grv[srctup[1]], srctup[2], dsttup[2])
-        shallowcopy_edge!(ng.flatgr, src, dst, ng.grv[srctup[1]], srctup[2], dsttup[2])
+        NestedGraphs.shallowcopy_edge!(ng.flatgr, src, dst, ng.grv[srctup[1]], srctup[2], dsttup[2])
     end
 end
 function Graphs.add_edge!(ng::NestedMetaGraph, src::T, dst::T, dpr::Dict{Symbol}) where T<:Integer
@@ -79,30 +80,26 @@ end
 # TODO: raise issue in MetaGraphs ?
 #
 "$(TYPEDSIGNATURES) Copy vertices and shallow references to data from `g2` to `g1`"
-function shallowcopy_vertices!(g1::R, g2::R) where {R<:AbstractMetaGraph}
+function NestedGraphs.shallowcopy_vertices!(g1::R, g2::R) where {R<:AbstractMetaGraph}
     for n in vertices(g2)
-        shallowcopy_vertex!(g1,g2,n)
+        NestedGraphs.shallowcopy_vertex!(g1,g2,n)
     end
 end
 "$(TYPEDSIGNATURES)"
-shallowcopy_vertex!(g1, g2::R, n) where {R<:NestedMetaGraph} = shallowcopy_vertex!(g1,g2.flatgr,n)
-"$(TYPEDSIGNATURES)"
-function shallowcopy_vertex!(g1::R, g2::R, n) where {R<:AbstractMetaGraph}
+function NestedGraphs.shallowcopy_vertex!(g1::R, g2::R, n) where {R<:AbstractMetaGraph}
     if ! MetaGraphs._hasdict(g2, n)
         set_props!(g2, n, Dict{Symbol,Any}())
     end
     Graphs.add_vertex!(g1, props(g2,n))
 end
 "$(TYPEDSIGNATURES) Copy edges and shallow references to data from `g2` to `g1`"
-function shallowcopy_edges!(g1::R, g2::R, offset::T) where {R<:AbstractMetaGraph, T<:Integer}
+function NestedGraphs.shallowcopy_edges!(g1::R, g2::R, offset::T) where {R<:AbstractMetaGraph, T<:Integer}
     for e in edges(g2)
-        shallowcopy_edge!(g1, offset+e.src, offset+e.dst, g2, e.src, e.dst)
+        NestedGraphs.shallowcopy_edge!(g1, offset+e.src, offset+e.dst, g2, e.src, e.dst)
     end
 end
 "$(TYPEDSIGNATURES)"
-shallowcopy_edge!(g1, src1, dst1, g2::R, src2, dst2) where {R<:NestedMetaGraph} = shallowcopy_edge!(g1,src1,dst1,g2.flatgr,src2,dst2)
-"$(TYPEDSIGNATURES)"
-function shallowcopy_edge!(g1::R, src1::T, dst1::T, g2::R, src2::T, dst2::T) where {R<:AbstractMetaGraph,T<:Integer}
+function NestedGraphs.shallowcopy_edge!(g1::R, src1::T, dst1::T, g2::R, src2::T, dst2::T) where {R<:AbstractMetaGraph,T<:Integer}
     if ! MetaGraphs._hasdict(g2, Edge(src2,dst2))
         set_props!(g2, Edge(src2, dst2), Dict{Symbol,Any}())
     end
@@ -110,43 +107,14 @@ function shallowcopy_edge!(g1::R, src1::T, dst1::T, g2::R, src2::T, dst2::T) whe
 end
 
 # not implemented in MetaGraphs.jl
-Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [shallowcopy_vertex!(g1, g2, v) for v in vertices(g2)];
-    
+Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [NestedGraphs.shallowcopy_vertex!(g1, g2, v) for v in vertices(g2)];
 
-#
-# Methods to enrich graph with more graphs
-#
-# """
-# Add subgraph graph `gr` into the `NestedGraph` `ng`.
-# It connectes `gr` with `ng`
+# multilayer
+# merge_vertices is not implemented ofr MetaGraphs
+function NestedGraphs.getsquashedgraph(ng::NestedGraph{T,R,N}, sqvertices::Vector{Vector{Q}}) where {T,R<:AbstractMetaGraph,N,Q<:Integer}
+#    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
+    squashedgraph = getsimplegraphcopy(ng)
+    _rec_merge_vertices!(SimpleGraph(squashedgraph), sqvertices)
+end
 
-# # Arguments
-# - `dprops`: vector of dictionaries for all `nedges`
-# - `vmap`: customize vmap 
-# - `both_ways`: add `nedges` also for the opposite direction
-# - `rev_cedges`: 
-# """
-# function Graphs.add_vertex!(ng::NestedGraph, gr::T, nedges, dprops=nothing; subgraphs=nothing, vmap=nothing, both_ways=false, rev_cedges=false) where {T<:AbstractGraph}
-#     if vmap === nothing
-#         vmap = vertices(gr)
-#     end
-#     function localizenestedge(ng, ce, revedges::Bool)
-#         revedges == true ? localsubgraph = 2 : localsubgraph = 1
-#         src = ce.src[1] == localsubgraph ? ng.vmap[ce.src[2]] : (length(ng.grv), ce.src[2])
-#         dst = ce.dst[1] == localsubgraph ? ng.vmap[ce.dst[2]] : (length(ng.grv), ce.dst[2])
-#         NestedEdge(src, dst)
-#     end
-#     shallowcopy_verdges!(ng.flatgr, gr)
-#     if subgraphs===nothing
-#         push!(ng.grv, gr)
-#         [push!(ng.vmap, (length(ng.grv), v)) for v in vmap]
-#     else
-#         add_vertex!(ng.grv[subgraphs], gr, nedges; subgraphs, dprops, vmap, both_ways, rev_cedges)
-#         [push!(ng.vmap, (subgraphs, v)) for v in vmap]
-#     end
-#     if length(nedges) > 0
-#         offcedges = localizenestedge.([ng], nedges, rev_cedges)
-#         add_edges!(ng, offcedges, dprops; both_ways=both_ways)
-#     end
-#     return length(ng.grv)
-# end
+end

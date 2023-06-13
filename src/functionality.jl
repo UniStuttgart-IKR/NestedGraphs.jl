@@ -13,10 +13,13 @@ This way any update on the data propagates automatically across the whole `Neste
 """
 shallowcopy_vertices!(g1::AbstractGraph, g2::NestedGraph) = shallowcopy_vertices!(g1, g2.flatgr)
 function shallowcopy_vertices!(g1::AbstractGraph, g2::AbstractGraph)
-    for v in vertices(g2)
+    for _ in vertices(g2)
         add_vertex!(g1)
     end
 end
+
+shallowcopy_vertex!(g1::AbstractGraph, g2::NestedGraph, n) =  shallowcopy_vertex!(g1, g2.flatgr, n)
+shallowcopy_vertex!(g1::AbstractGraph, g2::AbstractGraph, n) =  add_vertex!(g1)
 
 """
 $(TYPEDSIGNATURES) 
@@ -32,6 +35,9 @@ function shallowcopy_edges!(g1::AbstractGraph, g2::AbstractGraph, offset::Intege
         add_edge!(g1, offset+e.src, offset+e.dst)
     end
 end
+
+shallowcopy_edge!(g1::AbstractGraph, src1, dst1, g2::NestedGraph, src2, dst2) = shallowcopy_edge!(g1, src1, dst1, g2.flatgr, src2, dst2)
+shallowcopy_edge!(g1::AbstractGraph, src1, dst1, g2::AbstractGraph, src2, dst2) = Graphs.add_edge!(g1, src1, dst1)
 
 "$(TYPEDSIGNATURES) Unroll a nested vertex along all the nested graph subgraphs"
 function unroll_vertex(ng::NestedGraph, v::T)  where T<:Integer

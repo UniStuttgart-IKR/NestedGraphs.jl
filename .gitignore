@@ -1,5 +1,5 @@
 mynotes.norg
 docs/build/
 *.cov
-Manifest.toml
+/Manifest.toml
 test/livetest.jl

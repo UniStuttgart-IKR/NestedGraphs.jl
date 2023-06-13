@@ -1,8 +1,6 @@
 module NestedGraphs
 using Graphs
-using MetaGraphs, AttributeGraphs
 using SimpleTraits
-import AttributeGraphs: AbstractAttibuteGraph, addgraphattr!, remgraphattr!, addvertexattr!, remvertexattr!, addedgeattr!, remedgeattr!, graph_attr, vertex_attr, edge_attr, addvertex!, remvertex!, addedge!, remedge!, hasedgeattr, hasgraphattr, hasvertexattr, getgraphattr, getvertexattr, getedgeattr
 
 using DocStringExtensions
 
@@ -11,13 +9,11 @@ import Base: Pair, Tuple
 import AbstractTrees
 
 export NestedEdge, NestedVertex, NestedGraph, vertex, edge, nestededge, nestedvertex, subgraph, subgraphedge, getnestededges, unroll_vertex, roll_vertex
-export NestedMetaGraph
+export getgraph, getsubgraphs
 export getfoldedgraph, getmlvertices, getmlsquashedgraph, getsquashedgraph, getallsubgraphpaths, getallsubvertices, gettotalsubgraphs
        
 include("nestedgraph.jl")
 include("graphsimpl.jl")
-include("metagraphsimpl.jl")
-include("attributegraphs.jl")
 include("functionality.jl")
 include("multilayer.jl")
 

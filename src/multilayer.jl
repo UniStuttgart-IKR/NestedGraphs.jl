@@ -67,17 +67,6 @@ function _rec_merge_vertices!(squashedgraph, sqvertices)
     return squashedgraph, vm
 end
 
-# merge_vertices is not implemented ofr MetaGraphs
-function getsquashedgraph(ng::NestedGraph{T,R,N}, sqvertices::Vector{Vector{Q}}) where {T,R<:AbstractMetaGraph,N,Q<:Integer}
-#    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
-    squashedgraph = getsimplegraphcopy(ng)
-    _rec_merge_vertices!(SimpleGraph(squashedgraph), sqvertices)
-end
-function getsquashedgraph(ng::NestedGraph{T,R,N}, sqvertices::Vector{Vector{Q}}) where {T,R<:AbstractAttibuteGraph,N,Q<:Integer}
-#    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
-    squashedgraph = getsimplegraphcopy(ng)
-    _rec_merge_vertices!(SimpleGraph(squashedgraph), sqvertices)
-end
 
 @traitfn function getsimplegraphcopy(ng::NestedGraph::IsDirected)
     squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleDiGraph

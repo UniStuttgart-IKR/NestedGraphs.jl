@@ -11,6 +11,8 @@
 
 *A package to handle nested graphs.*
 
+> `NestedGraphs.jl` requires Julia v1.9+
+
 `NestedGraphs.jl` is a young project that aims at easy and type-stable graph analysis for nested graphs.
 This package is in an early development stage and might break often.
 
