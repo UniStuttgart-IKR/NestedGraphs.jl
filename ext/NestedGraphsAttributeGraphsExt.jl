@@ -102,10 +102,10 @@ end
 
 
 # multilayer.jl
-function getsquashedgraph(ng::NestedGraph{T,R,N}, sqvertices::Vector{Vector{Q}}) where {T,R<:AbstractAttributeGraph,N,Q<:Integer}
+function NestedGraphs.getsquashedgraph(ng::NestedGraph{T,R,N}, sqvertices::Vector{Vector{Q}}) where {T,R<:AbstractAttributeGraph,N,Q<:Integer}
 #    squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
-    squashedgraph = getsimplegraphcopy(ng)
-    _rec_merge_vertices!(SimpleGraph(squashedgraph), sqvertices)
+    squashedgraph = NestedGraphs.getsimplegraphcopy(ng)
+    NestedGraphs._rec_merge_vertices!(SimpleGraph(squashedgraph), sqvertices)
 end
 
 end
