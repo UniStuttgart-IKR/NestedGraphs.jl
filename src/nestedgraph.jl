@@ -55,7 +55,7 @@ getsubgraphs(ng::NestedGraph) = ng.grv
 Base.show(io::IO, t::NestedGraph{T,R,N}) where {T,R,N} = print(io, "NestedGraph{$(R),$(N)}({$(nv(t)),$(ne(t))}, $(length(t.grv)) subgraphs)")
 NestedGraph{T,R}() where {T,R} = NestedGraph{T,R,R}()
 """
-$(TYPEDSIGNATURES) 
+$(TYPEDSIGNATURES)         
 
 `extrasubgraph` controls the `NestedGraph` should be initialized with an empty subgraph
 """

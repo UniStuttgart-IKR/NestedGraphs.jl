@@ -12,6 +12,7 @@ function basic_test(g1, g2, g3, g4, ng, ng1, ng2, ngm)
      # ---------- start modifying the `NestedGraph` ---------
      # ----- add_vertex! -----
      # add to csgm.grv[1].grv[1] aka sg1
+     
      add_vertex!(ngm)
      @test nv(g1) == nv(ng.grv[1]) == nv(ng1.grv[1]) == nv(ngm.grv[1].grv[1]) == (numnodes_sg1+1)
 

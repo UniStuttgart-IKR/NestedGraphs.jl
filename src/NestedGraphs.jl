@@ -17,4 +17,8 @@ include("graphsimpl.jl")
 include("functionality.jl")
 include("multilayer.jl")
 
+function helloWorld()
+    println("Hello World")
+end
+
 end
