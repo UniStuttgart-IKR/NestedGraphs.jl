@@ -12,7 +12,7 @@ i.e., the edges connecting different layers, i.e., the edges connecting differen
 Malfunctions if more nodes across layers are connected with several non-vertical ways.
 """
 function getmlvertices(ng::NestedGraph; subgraph_view=false)
-    flatneds = [Edge(vertex(ng, src(ned)), vertex(ng, dst(ned))) for ned in ng.neds]
+    flatneds = [Edge(vertex(ng, src(ned))::Int, vertex(ng, dst(ned))::Int) for ned in ng.neds]
     indsub, vm = induced_subgraph(ng.flatgr, flatneds)
     lonelynodes = filter(v -> v ∉ vm, vertices(ng))
     wcc = map(weakly_connected_components(indsub)) do convec
@@ -72,6 +72,6 @@ end
     squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleDiGraph
 end
 
-@traitfn function getsimplegraphcopy(ng::NestedGraph::!(IsDirected))
+@traitfn function getsimplegraphcopy(ng::NestedGraph{T, AbstractGraph{T}}::!(IsDirected)) where T<:Integer
     squashedgraph = ng.flatgr |> deepcopy |> adjacency_matrix |> SimpleGraph
 end

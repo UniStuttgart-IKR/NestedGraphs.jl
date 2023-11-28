@@ -10,20 +10,24 @@ Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 SimpleTraits = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
 
 [weakdeps]
-MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 AttributeGraphs = "d091dd56-f8c5-469d-b7f7-ff847498145f"
+MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
+MetaGraphsNext = "fa8bd995-216d-47f1-8a91-f3b68fbeb377"
 
 [extensions]
-NestedGraphsMetaGraphsExt = "MetaGraphs"
 NestedGraphsAttributeGraphsExt = "AttributeGraphs"
+NestedGraphsMetaGraphsExt = "MetaGraphs"
+NestedGraphsMetaGraphsNextExt = "MetaGraphsNext"
 
 [compat]
 AbstractTrees = "0.4"
+AttributeGraphs = "0.3"
 DocStringExtensions = "0.9"
 Graphs = "1"
 MetaGraphs = "0.7"
-AttributeGraphs = "0.3"
+MetaGraphsNext = "0.6"
 SimpleTraits = "0.9"
+Test = "1.0"
 
 julia = "1.9"
 

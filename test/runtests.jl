@@ -1,9 +1,22 @@
-using Graphs, MetaGraphs, NestedGraphs, AttributeGraphs
-using Test
+using Graphs, NestedGraphs, AttributeGraphs
+import MetaGraphs as MG
+import MetaGraphsNext as MGN
+using Test, Aqua, JET
 using TestSetExtensions
 
 include("testutils.jl")
 
-@testset "NestedGraphs.jl" begin
+@testset verbose=true "Code quality (Aqua.jl)" begin
+    Aqua.test_all(NestedGraphs)
+end
+
+@testset "Code quality (JET.jl)" begin
+    JET.test_package(NestedGraphs; target_defined_modules=true)
+end
+
+
+@testset verbose=true "NestedGraphs.jl" begin
     @includetests ["simple", "simpleadd", "metagraphs", "metaadd", "addremgraphsimple", "multilayer", "attributegraphs"]
 end
+
+nothing

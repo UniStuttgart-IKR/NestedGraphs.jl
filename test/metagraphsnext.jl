@@ -1,22 +1,27 @@
-using Graphs, NestedGraphs
-import MetaGraphs as MG
-using Test
+@testset "metagraphsnext.jl" begin
+    g1 = getdefaultmetagraphnext()
+    g2 = getdefaultmetagraphnext()
+    g3 = getdefaultmetagraphnext()
+    g4 = getdefaultmetagraphnext()
 
- @testset "metagraphs.jl" begin
-    g1 = complete_graph(3) |> MG.MetaDiGraph
-    g2 = complete_graph(3) |> MG.MetaDiGraph
-    g3 = complete_graph(3) |> MG.MetaDiGraph
-    g4 = complete_graph(3) |> MG.MetaDiGraph
+    foreach(1:3) do i
+        add_vertex!(g1, Symbol("v",i), i*20)
+        add_vertex!(g2, Symbol("v",i), i*200)
+        add_vertex!(g3, Symbol("v",i), i*2000)
+        add_vertex!(g4, Symbol("v",i), i*20000)
+    end
 
-    [MG.set_prop!(g1, e, :el, i*0.2) for (i,e) in enumerate(edges(g1))]
-    [MG.set_prop!(g2, e, :el, i*0.02) for (i,e) in enumerate(edges(g2))]
-    [MG.set_prop!(g3, e, :el, i*0.002) for (i,e) in enumerate(edges(g3))]
-    [MG.set_prop!(g4, e, :el, i*0.0002) for (i,e) in enumerate(edges(g4))]
-
-    [MG.set_prop!(g1, v, :sz, v*20) for v in vertices(g1)]
-    [MG.set_prop!(g2, v, :sz, v*200) for v in vertices(g2)]
-    [MG.set_prop!(g3, v, :sz, v*2000) for v in vertices(g3)]
-    [MG.set_prop!(g4, v, :sz, v*20000) for v in vertices(g4)]
+    counter = 1
+    for i in MGN.labels(g1)
+        for j in MGN.labels(g1)
+            i == j && continue
+            add_edge!(g1, i, j, counter*0.2)
+            add_edge!(g2, i, j, counter*0.02)
+            add_edge!(g3, i, j, counter*0.002)
+            add_edge!(g4, i, j, counter*0.0002)
+            counter += 1
+        end
+    end
 
     eds = [((1,1), (2,1)), ((3,2), (2,1)), ((3,3),(2,3)), ((1,1),(4,1))]
     ng = NestedGraph([g1,g2,g3,g4], eds, both_ways=true)
@@ -52,13 +57,13 @@ using Test
             @test MG.props(gr, e) === MG.props(ng.grv[i], e)
         end
     end
-    
+
     # rerun all tests from simple graphs
     ng1 = NestedGraph([g1,g2], [((1,1), (2,1))])
     ng2 = NestedGraph([g3,g4], [((1,2), (2,2)), ((1,3), (2,3))])
     ngm = NestedGraph([ng1, ng2], [((1,1),(2,1)), ((1,5),(2,2))], both_ways=true)
 
     @test @inferred(NestedGraph([ng1, ng2])) isa Any
-     
+
     basic_test(g1, g2, g3, g4, ng, ng1, ng2, ngm)
- end
+end

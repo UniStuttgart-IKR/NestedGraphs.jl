@@ -1,15 +1,15 @@
 @testset "metaadd.jl" begin
-    DynMNG = NestedGraph{Int, MetaGraph{Int,Float64}, AbstractGraph}
+    DynMNG = NestedGraph{Int, MG.MetaGraph{Int,Float64}, AbstractGraph}
     ngdyn = DynMNG(extrasubgraph=false)    
 
-    sg1 = MetaGraph(3)
-    [set_prop!(sg1, v, :vel, "1.$(v)") for v in vertices(sg1)]
+    sg1 = MG.MetaGraph(3)
+    [MG.set_prop!(sg1, v, :vel, "1.$(v)") for v in vertices(sg1)]
     add_vertex!(ngdyn, sg1)
     @test nv(ngdyn.grv[1]) == 3
 
-    add_vertex!(ngdyn, MetaGraph(6))
+    add_vertex!(ngdyn, MG.MetaGraph(6))
     # ngdyn.grv[2] and ngdyn.flatgr `Dict` are shallow copies
-    [set_prop!(ngdyn.grv[2], v, :vel, "2.$(v)") for v in 1:6]
+    [MG.set_prop!(ngdyn.grv[2], v, :vel, "2.$(v)") for v in 1:6]
     @test nv(ngdyn.grv[1]) == 3 && nv(ngdyn.grv[2]) == 6
 
     # flatnode 10 enters in vmap (1,4)
@@ -23,8 +23,8 @@
     add_vertex!(ngdyn, :vel, "3.1.1"; subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 1
 
-    sg2 = MetaGraph(2)
-    [set_prop!(sg2, v, :vel, "3.1.$(v)") for v in vertices(sg2)]
+    sg2 = MG.MetaGraph(2)
+    [MG.set_prop!(sg2, v, :vel, "3.1.$(v)") for v in vertices(sg2)]
     add_vertex!(ngdyn, sg2, subgraphs = 3)
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 3
 
@@ -35,8 +35,8 @@
     add_vertex!(ngdyn, :vel, "3.3.1",subgraphs=[3,2])
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 4
 
-    sg3 = MetaGraph(2)
-    [set_prop!(sg3, v, :vel, "3.3.2.$(v)") for v in vertices(sg3)]
+    sg3 = MG.MetaGraph(2)
+    [MG.set_prop!(sg3, v, :vel, "3.3.2.$(v)") for v in vertices(sg3)]
     add_vertex!(ngdyn, sg3, subgraphs=[3,3])
     @test nv(ngdyn.grv[1]) == 4 && nv(ngdyn.grv[2]) == 7 && nv(ngdyn.grv[3]) == 6
 
@@ -52,8 +52,8 @@
     testprops_recu(ngdyn)
     # modify
     for v in vertices(ngdyn)
-        prevprop = get_prop(ngdyn, v, :vel)
-        set_prop!(ngdyn, v, :vel, prevprop*"_mod")
+        prevprop = MG.get_prop(ngdyn, v, :vel)
+        MG.set_prop!(ngdyn, v, :vel, prevprop*"_mod")
     end
     testprops_recu(ngdyn)
     

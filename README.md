@@ -4,6 +4,7 @@
 # NestedGraphs.jl
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://UniStuttgart-IKR.github.io/NestedGraphs.jl/dev)
 [![codecov.io](http://codecov.io/github/UniStuttgart-IKR/NestedGraphs.jl/coverage.svg?branch=main)](http://codecov.io/github/UniStuttgart-IKR/NestedGraphs.jl?branch=main)
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 </div>
 

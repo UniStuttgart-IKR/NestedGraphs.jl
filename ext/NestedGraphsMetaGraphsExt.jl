@@ -107,7 +107,6 @@ function NestedGraphs.shallowcopy_edge!(g1::R, src1::T, dst1::T, g2::R, src2::T,
 end
 
 # not implemented in MetaGraphs.jl
-Graphs.add_vertices!(g1::AbstractMetaGraph, g2::AbstractMetaGraph) = [NestedGraphs.shallowcopy_vertex!(g1, g2, v) for v in vertices(g2)];
 
 # multilayer
 # merge_vertices is not implemented ofr MetaGraphs

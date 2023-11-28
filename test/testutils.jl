@@ -41,13 +41,13 @@ end
 
 function testprops_recu(nmg)
      for (n, (d, v)) in enumerate(nmg.vmap)
-          @test props(nmg, n) === props(nmg.grv[d], v)
+          @test MG.props(nmg, n) === MG.props(nmg.grv[d], v)
      end
      for e in edges(nmg)
           if !(e in getnestededges(nmg))
                ne = nestededge(nmg, e)
                @test ne.src[1] == ne.dst[1]
-               @test props(nmg, e.src, e.dst) === props(nmg.grv[ne.src[1]], ne.src[2], ne.dst[2])
+               @test MG.props(nmg, e.src, e.dst) === MG.props(nmg.grv[ne.src[1]], ne.src[2], ne.dst[2])
           end
      end
      for gr in nmg.grv
@@ -98,4 +98,14 @@ function test_meta_top()
     [set_prop!(sg3, v, :vel, "3.3.2.$(v)") for v in vertices(sg3)]
     add_vertex!(ngdyn, sg3, subgraphs=[3,3])
     return ngdyn
+end
+
+function getdefaultmetagraphnext()
+    MGN.MetaGraph(
+        DiGraph();  # underlying graph structure
+        label_type=Symbol,  # color name
+        vertex_data_type=Float64,
+        edge_data_type=Float64,
+        graph_data="additive colors",  # tag for the whole graph
+    )
 end

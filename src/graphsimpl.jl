@@ -32,7 +32,7 @@ end
 _propagate_to_nested(ng, fun, subgraph::T, args...) where T<:Integer = fun(ng.grv[subgraph], args...)
 
 "$(TYPEDSIGNATURES) `subgraph` is the nested graph to insert a node"
-function Graphs.add_vertices!(ng::NestedGraph, vs; subgraphs=1)
+function Graphs.add_vertices!(ng::NestedGraph, vs::Int; subgraphs=1)
     subgraph = first(subgraph)
     Graphs.add_vertices!(ng.grv[subgraph], vs)
     _propagate_to_nested(ng, Graphs.add_vertices!, subgraphs, vs)
@@ -62,12 +62,12 @@ end
 "$(TYPEDSIGNATURES)  Remove node or graph identified by `path2rem`."
 function Graphs.rem_vertex!(ng::NestedGraph, path2rem::Vector{T}) where T<:Integer
     if !isagraph(ng, path2rem)
-        rem_vertex!(ng, roll_vertex(ng, path2rem))
+        rem_vertex!(ng, roll_vertex(ng, path2rem)::Int)
     else
         gr2del = innergraph(ng, path2rem)
         for v in vertices(gr2del)
             path2remvert = vcat(path2rem, [1]) #always delete the first one. others will be pushed.
-            rem_vertex!(ng, roll_vertex(ng, path2remvert))
+            rem_vertex!(ng, roll_vertex(ng, path2remvert)::Int)
         end
         parentgr = length(path2rem) > 1 ? innergraph(ng, path2rem[1:end-1]) : ng
         deleteat!(parentgr.grv, path2rem[end])
@@ -101,6 +101,7 @@ function Graphs.rem_edge!(ng::NestedGraph, src::T, dst::T) where T<:Integer
     end
 end
 
+Graphs.induced_subgraph(ng::NestedGraph, ve::AbstractVector{Bool}) = Graphs.induced_subgraph(ng.flatgr, ve)
 Graphs.induced_subgraph(ng::NestedGraph, ve::AbstractVector{T}) where {T<:Integer} = Graphs.induced_subgraph(ng.flatgr, ve)
 Graphs.induced_subgraph(ng::NestedGraph, ve::AbstractVector{R}) where {R<:Edge} = Graphs.induced_subgraph(ng.flatgr, ve)
 function Graphs.has_vertex(ng::NestedGraph, v1::T, v2::T) where T<:Integer
@@ -128,69 +129,3 @@ function Graphs.add_vertex!(ng::NestedGraph, gr::T; subgraphs=nothing) where {T<
     end
 end
 
-#
-# Methods to enrich graph with more graphs cumulatively
-#
-Graphs.add_vertices!(g1::AbstractGraph, g2::AbstractGraph, vlis::Vector{T}) where T<:Integer = add_vertices!(g1, induced_subgraph(g2, vlis)[1]);
-Graphs.add_vertices!(g1::AbstractGraph, g2::AbstractGraph) = add_vertices!(g1, length(vertices(g2)));
-Graphs.add_vertices!(g1::NestedGraph, g2::AbstractGraph) = add_vertices!(g1.flatgr, g2)
-Graphs.add_vertices!(g1::NestedGraph, g2::NestedGraph) = add_vertices!(g1.flatgr, g2)
-function Graphs.add_vertices!(g1::AbstractGraph, g2::NestedGraph) 
-    for gr in g2.grv
-        add_vertices!(g1, gr)
-    end
-end
-
-# deprecated
-#add_vertex_old!(ng::NestedGraph, grv::T) where {T<:AbstractGraph} = Graphs.add_vertex!(ng, grv, Vector{NestedEdge{Int}}())
-#"""
-#$(TYPEDSIGNATURES) 
-#Add subgraph graph `gr` into the `NestedGraph` `ng`.
-#It connectes `gr` with `ng`
-#"""
-#function add_vertex_old!(ng::NestedGraph, gr::T, nedges, dprops=nothing; subgraphs=nothing, vmap=nothing, both_ways=false, rev_cedges=false) where {T<:AbstractGraph}
-#    if vmap === nothing
-#        vmap = vertices(gr)
-#    end
-#    function localizenestedge(ng, ce, revedges::Bool)
-#        revedges == true ? localsubgraph = 2 : localsubgraph = 1
-#        src = ce.src[1] == localsubgraph ? ng.vmap[ce.src[2]] : (length(ng.grv), ce.src[2])
-#        dst = ce.dst[1] == localsubgraph ? ng.vmap[ce.dst[2]] : (length(ng.grv), ce.dst[2])
-#        NestedEdge(src, dst)
-#    end
-#    shallowcopy_verdges!(ng.flatgr, gr)
-#    if subgraphs===nothing
-#        push!(ng.grv, gr)
-#        [push!(ng.vmap, (length(ng.grv), v)) for v in vmap]
-#    else
-#        add_vertex!(ng.grv[subgraphs], gr, nedges; subgraphs, dprops, vmap, both_ways, rev_cedges)
-#        [push!(ng.vmap, (subgraphs, v)) for v in vmap]
-#    end
-#    if length(nedges) > 0
-#        offcedges = localizenestedge.([ng], nedges, rev_cedges)
-#        add_edges!(ng, offcedges, dprops; both_ways=both_ways)
-#    end
-#    return length(ng.grv)
-#end
-#
-## `add_edges!` is not defined in `Graphs.jl`. Make a PR to add it?
-## TODO: this is for MetaGraphs. move to metagraphsimpl.jl
-#function add_edges_old!(flatgr::AbstractGraph, vmap::Vector{Tuple{R,R}}, nedges::Vector{NestedEdge{R}}, dprops::Union{Vector{Dict{Symbol,U}}, Nothing}=nothing; both_ways::Bool=false) where {R<:Integer, U}
-#    dprops !== nothing && length(dprops) != length(nedges) && error("`nedges` and `dprops` must have equal length")
-#    for (i,e) in enumerate(nedges)
-#        src = findfirst(==(e.src), vmap)
-#        dst = findfirst(==(e.dst), vmap)
-#        if dprops !== nothing
-#            add_edge!(flatgr, src, dst, dprops[i])
-#        else
-#            add_edge!(flatgr, src, dst)
-#        end
-#        if both_ways
-#            if dprops !== nothing
-#                add_edge!(flatgr, dst, src, dprops[i])
-#            else 
-#                add_edge!(flatgr, dst, src)
-#            end
-#        end
-#    end
-#end

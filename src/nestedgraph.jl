@@ -77,11 +77,11 @@ function NestedGraph(grv::Vector{R}, edges::AbstractVector; both_ways::Bool=fals
     nedgs = convert.(NestedEdge, edges)
     flatgrtype = unwraptype(R)
     if !isconcretetype(flatgrtype)
-        flatgrtypes = [unwraptype(typeof(gr)) for gr in grv]
+        flatgrtypes = DataType[unwraptype(typeof(gr)) for gr in grv]
         @assert all(==(flatgrtypes[1]), flatgrtypes)
         flatgrtype = flatgrtypes[1]
     end
-    flatgr = flatgrtype()
+    flatgr = initialize(flatgrtype)
     vmap = Vector{Tuple{Int,Int}}()
     # transfer the graphs to flat graph
     for (i,g) in enumerate(grv)
@@ -95,6 +95,10 @@ function NestedGraph(grv::Vector{R}, edges::AbstractVector; both_ways::Bool=fals
     end
     return ng
 end
+
+"""$(TYPEDSIGNATURES) Initializes AbstractGraph without arguments
+Workaround of https://github.com/JuliaGraphs/MetaGraphsNext.jl/issues/65"""
+initialize(x::Type{G}) where G<:AbstractGraph = x()
 
 "$(TYPEDSIGNATURES) Unwrap NestedGraph to Graph type"
 unwraptype(::Type{NestedGraph{T,R}}) where {T,R} = return unwraptype(R)
@@ -117,7 +121,7 @@ vertex(ng::NestedGraph, d::T, v::T) where T<:Integer = findfirst(==((d,v)), ng.v
 subgraph(ng::NestedGraph, v::T) where T<:Integer = ng.vmap[v][1]
 
 "$(TYPEDSIGNATURES) Convert a local view `NestedEdge` to a global view"
-edge(ng::NestedGraph, ce::NestedEdge) = Edge(vertex(ng, ce.src[1], ce.src[2]), vertex(ng, ce.dst[1], ce.dst[2]))
+edge(ng::NestedGraph, ce::NestedEdge) = Edge(vertex(ng, ce.src[1], ce.src[2])::Int, vertex(ng, ce.dst[1], ce.dst[2])::Int)
 "$(TYPEDSIGNATURES) Convert a global view of an edge to local view `NestedEdge`"
 nestededge(ng::NestedGraph, e::Edge) = NestedEdge(ng.vmap[e.src], ng.vmap[e.dst])
 "$(TYPEDSIGNATURES)"
