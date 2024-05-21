@@ -14,10 +14,10 @@ hasvertexattr(ag::NestedGraph{T,G}, k) where {T<:Integer,G<:AbstractAttributeGra
 hasedgeattr(ag::NestedGraph{T,G}, args...) where {T<:Integer,G<:AbstractAttributeGraph} = hasedgeattr(NestedGraphs.getgraph(ag), args...)
 
 
-function addvertex!(ng::NestedGraph{T,G}; subgraphs=1) where {T<:Integer, G<:AbstractAttributeGraph}
+function addvertex!(ng::NestedGraph{T,G}; subgraphs=1, targetnode=nothing) where {T<:Integer, G<:AbstractAttributeGraph}
     subgraph = first(subgraphs)
     length(ng.grv) == 0 && (add_vertex!(ng, G()))
-    targetnode = nv(ng.grv[subgraph])+1
+    isnothing(targetnode) && (targetnode = nv(ng.grv[subgraph])+1)
     Graphs.has_vertex(ng, subgraph, targetnode) && return false
     addvertex!(ng.flatgr)
     push!(ng.vmap, (subgraph, targetnode) )

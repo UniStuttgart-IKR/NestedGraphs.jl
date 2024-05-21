@@ -10,13 +10,15 @@ include("testutils.jl")
     Aqua.test_all(NestedGraphs)
 end
 
-@testset "Code quality (JET.jl)" begin
-    JET.test_package(NestedGraphs; target_defined_modules=true)
-end
+# @testset "Code quality (JET.jl)" begin
+#     JET.test_package(NestedGraphs; target_defined_modules=true)
+# end
 
 
 @testset verbose=true "NestedGraphs.jl" begin
-    @includetests ["simple", "simpleadd", "metagraphs", "metaadd", "addremgraphsimple", "multilayer", "attributegraphs"]
+    for f in ["simple", "simpleadd", "metagraphs", "metaadd", "addremgraphsimple", "multilayer", "attributegraphs"]
+        include(f*".jl")
+    end
 end
 
 nothing

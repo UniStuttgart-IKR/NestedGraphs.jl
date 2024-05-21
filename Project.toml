@@ -25,7 +25,7 @@ AttributeGraphs = "0.3"
 DocStringExtensions = "0.9"
 Graphs = "1"
 MetaGraphs = "0.7"
-MetaGraphsNext = "0.6"
+MetaGraphsNext = "0.5, 0.6"
 SimpleTraits = "0.9"
 Test = "1.0"
 
